@@ -33,6 +33,7 @@ namespace FileEncryptor
                 return;
 
             }
+            this.DialogResult = DialogResult.OK;
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)

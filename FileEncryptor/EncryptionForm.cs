@@ -35,6 +35,7 @@ namespace FileEncryptor
             {
                 mainForm.EncryptionFlag = 2;
             }
+            this.DialogResult = DialogResult.OK;
         }
 
         private void ButtonCancel_Click(object sender, EventArgs e)
