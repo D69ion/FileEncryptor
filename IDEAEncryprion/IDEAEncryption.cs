@@ -1,29 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace IDEAEncryprion
 {
     public class IDEAEncryption
     {
-        private ushort[] key;
         private static RNGCryptoServiceProvider rNG = new RNGCryptoServiceProvider();
 
-        public ushort[] Key
-        {
-            get
-            {
-                return key;
-            }
-            set
-            {
-                key = value;
-            }
-        }
+        public ushort[] Key { get; set; }
 
         /// <summary>
         /// Encrypt file with IDEA encryption
@@ -52,8 +38,15 @@ namespace IDEAEncryprion
             {
                 EncryptionRounds(srcFileStream, encryptedFileStream, i);
             }
+            encryptedFileStream.Flush();
         }
 
+        /// <summary>
+        /// First 8 rounds of encryption
+        /// </summary>
+        /// <param name="srcFileStream">Input source file stream</param>
+        /// <param name="encryptedFileStream">Output encrypted file stream</param>
+        /// <param name="startIndex">The position from which the reading starts in the source file stream</param>
         private void EncryptionRounds(FileStream srcFileStream, FileStream encryptedFileStream, long startIndex)
         {
             byte[] data = new byte[8];
@@ -70,15 +63,27 @@ namespace IDEAEncryprion
             //раунды шифрования
             for(int i = 0; i < 48; i += 6)
             {
-                blocks[0] = (ushort)((blocks[0] * key[i]) % 65537);
-                blocks[1] = (ushort)((blocks[1] + key[i + 1]) % 65536);
-                blocks[2] = (ushort)((blocks[2] + key[i + 2]) % 65536);
-                blocks[3] = (ushort)((blocks[3] * key[i + 3]) % 65537);
+                if (blocks[0] == 0)
+                    blocks[0] = (ushort)((65536 * Key[i]) % 65537);
+                else
+                    blocks[0] = (ushort)((blocks[0] * Key[i]) % 65537);
+                blocks[1] = (ushort)((blocks[1] + Key[i + 1]) % 65536);
+                blocks[2] = (ushort)((blocks[2] + Key[i + 2]) % 65536);
+                if (blocks[3] == 0)
+                    blocks[3] = (ushort)((65536 * Key[i]) % 65537);
+                else
+                    blocks[3] = (ushort)((blocks[3] * Key[i + 3]) % 65537);
                 ushort temp1 = (ushort)(blocks[0] ^ blocks[2]);
                 ushort temp2 = (ushort)(blocks[1] ^ blocks[3]);
-                temp1 = (ushort)((temp1 * key[i + 4]) % 65537);
+                if (temp1 == 0)
+                    temp1 = (ushort)((65536 * Key[i + 4]) % 65537);
+                else
+                    temp1 = (ushort)((temp1 * Key[i + 4]) % 65537);
                 temp2 = (ushort)((temp1 + temp2) % 65536);
-                temp2 = (ushort)((temp2 * key[i + 5]) % 65537);
+                if(temp2==0)
+                    temp2 = (ushort)((65536 * Key[i + 5]) % 65537);
+                else
+                    temp2 = (ushort)((temp2 * Key[i + 5]) % 65537);
                 temp1 = (ushort)((temp1 + temp2) % 65536);
                 blocks[0] = (ushort)(blocks[0] ^ temp2);
                 blocks[1] = (ushort)(blocks[1] ^ temp1);
@@ -102,12 +107,22 @@ namespace IDEAEncryprion
             encryptedFileStream.Write(data, 0, 8);
         }
 
+        /// <summary>
+        /// Last half round of encryption
+        /// </summary>
+        /// <param name="blocks">Data block</param>
         private void EncryptionLastRound(ushort[] blocks)
         {
-            blocks[0] = (ushort)((blocks[0] * key[48]) % 65537);
-            blocks[1] = (ushort)((blocks[1] + key[49]) % 65536);
-            blocks[2] = (ushort)((blocks[2] + key[50]) % 65536);
-            blocks[3] = (ushort)((blocks[3] * key[51]) % 65537);
+            if(blocks[0]==0)
+                blocks[0] = (ushort)((65536 * Key[48]) % 65537);
+            else
+                blocks[0] = (ushort)((blocks[0] * Key[48]) % 65537);
+            blocks[1] = (ushort)((blocks[1] + Key[49]) % 65536);
+            blocks[2] = (ushort)((blocks[2] + Key[50]) % 65536);
+            if(blocks[3]==0)
+                blocks[3] = (ushort)((65536 * Key[51]) % 65537);
+            else
+                blocks[3] = (ushort)((blocks[3] * Key[51]) % 65537);
         }
 
         /// <summary>
@@ -126,6 +141,7 @@ namespace IDEAEncryprion
             {
                 keyFileStream.Write(BitConverter.GetBytes(Key[i]), 0, 2);
             }
+            keyFileStream.Flush();
         }
 
         /// <summary>
