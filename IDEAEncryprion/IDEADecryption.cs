@@ -41,27 +41,20 @@ namespace IDEAEncryprion
                 keyData[i] = BitConverter.ToUInt16(temp, 0);
             }
 
-            ushort tempKey = 0;
-            byte count = 0;
+            sbyte count = -1;
             for(int i = 50; i > 8; i -= 6)
             {
-                Key[count] = MultiplicativeInversion(keyData[i]);
-                count++;
-                Key[count] = AdditiveInversion(keyData[i + 1]);
-                count++;
-                Key[count] = AdditiveInversion(keyData[i + 2]);
-                count++;
-                Key[count] = MultiplicativeInversion(keyData[i + 3]);
-                count++;
-                Key[count] = keyData[i - 2];
-                count++;
-                Key[count] = keyData[i - 1];
-                count++;
+                Key[++count] = MultiplicativeInversion(keyData[i]);
+                Key[++count] = AdditiveInversion(keyData[i + 1]);
+                Key[++count] = AdditiveInversion(keyData[i + 2]);
+                Key[++count] = MultiplicativeInversion(keyData[i + 3]);
+                Key[++count] = keyData[i - 2];
+                Key[++count] = keyData[i - 1];
             }
-            for(int i = 0; i < 4; i++)
-            {
-
-            }
+            Key[++count] = MultiplicativeInversion(keyData[0]);
+            Key[++count] = AdditiveInversion(keyData[1]);
+            Key[++count] = AdditiveInversion(keyData[2]);
+            Key[++count] = MultiplicativeInversion(keyData[3]);
         }
 
         /// <summary>
