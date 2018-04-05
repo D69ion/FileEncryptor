@@ -129,21 +129,16 @@ namespace FileEncryptor
                 {
                     case 1:
                         {
-                            //вызовы функций шифрования
-                            IDEAEncryption encryption = new IDEAEncryption();
-
                             //создание файловых потоков
-                            FileStream srcFile = File.Open(SrcFilePath, FileMode.Open, FileAccess.Read);
-                            FileStream resFile = File.Create(SavePath + "\\" + FileName + ".encryp");
-                            FileStream keyFile = File.Create(SavePath + "\\" + FileName + ".key");
-
-                            //шифрование
-                            encryption.Encrypt(srcFile, resFile, keyFile, FileExtension);
-
-                            //закрытие файлов
-                            srcFile.Close();
-                            resFile.Close();
-                            keyFile.Close();
+                            using (FileStream srcFile = File.Open(SrcFilePath, FileMode.Open, FileAccess.Read),
+                                              resFile = File.Create(SavePath + "\\" + FileName + ".encryp"),
+                                              keyFile = File.Create(SavePath + "\\" + FileName + ".key"))
+                            {
+                                //вызовы функций шифрования
+                                IDEAEncryption encryption = new IDEAEncryption();
+                                //шифрование
+                                encryption.Encrypt(srcFile, resFile, keyFile, FileExtension);
+                            }
                             break;
                         }
                     case 2:
@@ -189,14 +184,26 @@ namespace FileEncryptor
 
         private void ButtonDecrypt_Click(object sender, EventArgs e)
         {
-            DecryptionForm passwordForm = new DecryptionForm(this);
-            passwordForm.ShowDialog();
-            if (passwordForm.DialogResult == DialogResult.OK)
+            DecryptionForm decryptionForm = new DecryptionForm(this);
+            decryptionForm.ShowDialog();
+            if (decryptionForm.DialogResult == DialogResult.OK)
             {
-                passwordForm.Dispose();
+                decryptionForm.Dispose();
 
                 //вызовы функций дешифровки
+                switch (EncryptionFlag)
+                {
+                    case 1:
+                        {
 
+                            break;
+                        }
+                    case 2:
+                        {
+
+                            break;
+                        }
+                }
 
                 //очищение textbox и полей данных
                 textBoxFileName.Clear();
@@ -214,9 +221,9 @@ namespace FileEncryptor
                     infoForm.Dispose();
                 }
             }
-            if (passwordForm.DialogResult == DialogResult.Cancel)
+            if (decryptionForm.DialogResult == DialogResult.Cancel)
             {
-                passwordForm.Dispose();
+                decryptionForm.Dispose();
             }
         }
 
