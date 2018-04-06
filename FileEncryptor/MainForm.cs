@@ -14,12 +14,6 @@ namespace FileEncryptor
 {
     public partial class MainForm : Form
     {
-        private string savePath;
-        private string srcFilePath;
-        private string fileName;
-        private string keyFilePath;
-        private byte encryptionFlag;
-
         public MainForm()
         {
             InitializeComponent();
@@ -28,74 +22,23 @@ namespace FileEncryptor
             textBoxFileName.ReadOnly = true;
             textBoxFilePath.ReadOnly = true;
             textBoxLog.ReadOnly = true;
-            savePath = Environment.SpecialFolder.MyDocuments.ToString();
-            fileName = "";
-            keyFilePath = "";
-            encryptionFlag = 0;
+            SavePath = Environment.SpecialFolder.MyDocuments.ToString();
+            FileName = "";
+            KeyFilePath = "";
+            EncryptionFlag = 0;
         }
 
         public string FileExtension { get; set; }
-        
-        public string SavePath
-        {
-            get
-            {
-                return savePath;
-            }
-            set
-            {
-                savePath = value;
-            }
-        }
 
-        public string SrcFilePath
-        {
-            get
-            {
-                return srcFilePath;
-            }
-            set
-            {
-                srcFilePath = value;
-            }
-        }
+        public string SavePath { get; set; }
 
+        public string SrcFilePath { get; set; }
 
-        public string FileName
-        {
-            get
-            {
-                return fileName;
-            }
-            set
-            {
-                fileName = value;
-            }
-        }
+        public string FileName { get; set; }
 
-        public string KeyFilePath
-        {
-            get
-            {
-                return keyFilePath;
-            }
-            set
-            {
-                keyFilePath = value;
-            }
-        }
+        public string KeyFilePath { get; set; }
 
-        public byte EncryptionFlag
-        {
-            get
-            {
-                return encryptionFlag;
-            }
-            set
-            {
-                encryptionFlag = value;
-            }
-        }
+        public byte EncryptionFlag { get; set; }
 
 
         private void Button_SelectFile_Click(object sender, EventArgs e)
@@ -109,10 +52,13 @@ namespace FileEncryptor
                 SrcFilePath = info.FullName;
                 FileName = Path.GetFileNameWithoutExtension(info.FullName);
                 FileExtension = Path.GetExtension(info.FullName);
-                buttonEncrypt.Enabled = true;
                 if (info.Extension.Equals(".encryp"))
                 {
                     buttonDecrypt.Enabled = true;
+                }
+                else
+                {
+                    buttonEncrypt.Enabled = true;
                 }
                 textBoxLog.Text += "Selected file: " + info.Name.ToString() + "\r\n";
             }
@@ -136,26 +82,20 @@ namespace FileEncryptor
                             {
                                 //вызовы функций шифрования
                                 IDEAEncryption encryption = new IDEAEncryption();
-                                //шифрование
                                 encryption.Encrypt(srcFile, resFile, keyFile, FileExtension);
                             }
                             break;
                         }
                     case 2:
                         {
-                            //вызовы функций шифрования
-
                             //создание файловых потоков
-                            FileStream srcFile = File.Open(SrcFilePath, FileMode.Open, FileAccess.Read);
-                            FileStream resFile = File.Create(SavePath + "\\" + FileName + ".encryp");
-                            FileStream keyFile = File.Create(SavePath + "\\" + FileName + ".key");
+                            using (FileStream srcFile = File.Open(SrcFilePath, FileMode.Open, FileAccess.Read),
+                                              resFile = File.Create(SavePath + "\\" + FileName + ".encryp"),
+                                              keyFile = File.Create(SavePath + "\\" + FileName + ".key"))
+                            {
+                                //вызовы функций шифрования
 
-                            //шифрование
-
-                            //закрытие файлов
-                            srcFile.Close();
-                            resFile.Close();
-                            keyFile.Close();
+                            }
                             break;
                         }
                 }
@@ -189,17 +129,50 @@ namespace FileEncryptor
             if (decryptionForm.DialogResult == DialogResult.OK)
             {
                 decryptionForm.Dispose();
+                using (FileStream keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
+                                  encryptedFileStream = new FileStream(SrcFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    EncryptionFlag = (byte)encryptedFileStream.ReadByte();
 
-                //вызовы функций дешифровки
+                    byte[] hashKeyFile = new byte[16];
+                    byte[] hashEncryptedFile = new byte[16];
+                    keyFileStream.Seek(0, SeekOrigin.Begin);
+                    encryptedFileStream.Seek(1, SeekOrigin.Begin);
+                    keyFileStream.Read(hashKeyFile, 0, 16);
+                    encryptedFileStream.Read(hashEncryptedFile, 0, 16);
+                    bool b = true;
+                    for(int i = 0; i < 16; i++)
+                    {
+                        if (hashEncryptedFile[i] != hashKeyFile[i])
+                            b = false;
+                    }
+                    if (!b)
+                    {
+                        InfoForm form = new InfoForm("The key file does not math the encrypted file");
+                        form.ShowDialog();
+                        if (form.DialogResult == DialogResult.OK)
+                        {
+                            form.Dispose();
+                            return;
+                        }
+                    }
+                }
+
                 switch (EncryptionFlag)
                 {
                     case 1:
                         {
+                            //создание файловых потоков
 
+                            //вызовы функций дешифровки
+                            //IDEADecryption iDEADecryption
                             break;
                         }
                     case 2:
                         {
+                            //создание файловых потоков
+
+                            //вызовы функций дешифровки
 
                             break;
                         }
@@ -233,7 +206,7 @@ namespace FileEncryptor
             //browserDialog.RootFolder = Environment.SpecialFolder.MyDocuments;
             if (browserDialog.ShowDialog() == DialogResult.OK)
             {
-                savePath = browserDialog.SelectedPath.ToString();
+                SavePath = browserDialog.SelectedPath.ToString();
                 textBoxLog.Text += "Save folder is selected: " + browserDialog.SelectedPath.ToString() + "\r\n";
             }
         }

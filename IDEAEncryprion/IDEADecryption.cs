@@ -14,23 +14,59 @@ namespace IDEAEncryprion
         public ushort[] Key { get; set; }
         const int mod = 65537;//2^16 + 1
 
-        public void Decryption(FileStream srcFileStream, FileStream decryptedFileStream, FileStream keyFileStream)
+        /// <summary>
+        /// Decrypt the file encrypted IDEA encryption
+        /// </summary>
+        /// <param name="srcFileStream"></param>
+        /// <param name="decryptedFileStream"></param>
+        /// <param name="keyFileStream"></param>
+        public void Decrypt(FileStream srcFileStream, FileStream decryptedFileStream, FileStream keyFileStream)
         {
-            GenerateKey(srcFileStream, keyFileStream);
+            GenerateKey(keyFileStream);
+
+            for (long i = 17; i < srcFileStream.Length; i += 8)//неточность
+            {
+                DecryptionRounds(srcFileStream, decryptedFileStream, i);
+            }
+            decryptedFileStream.Flush();
 
         }
 
-        private void DecryptionRounds(FileStream srcFileStream, FileStream decryptedFileStream)
+        /// <summary>
+        /// First 8 rounds of decryption
+        /// </summary>
+        /// <param name="srcFileStream">Input source file stream</param>
+        /// <param name="decryptedFileStream">Output decrypted file stream</param>
+        /// <param name="startIndex">The position from which the reading starts in the source file stream</param>
+        private void DecryptionRounds(FileStream srcFileStream, FileStream decryptedFileStream, long startIndex)
         {
 
         }
 
-        private void DecryptionLastRound(ushort[] data)
+        /// <summary>
+        /// Round of decryption
+        /// </summary>
+        /// <param name="blocks">Data blocks</param>
+        /// <param name="i">Key index</param>
+        private void DecryptionRound(ushort[] blocks, int i)
         {
 
         }
 
-        private void GenerateKey(FileStream srcFileStream, FileStream keyFileStream)
+        /// <summary>
+        /// Last half round of decryption
+        /// </summary>
+        /// <param name="blocks">Data blocks</param>
+        private void DecryptionLastRound(ushort[] blocks)
+        {
+
+        }
+
+        /// <summary>
+        /// Regenerate key for decryption
+        /// </summary>
+        /// <param name="keyFileStream">Key file streams</param>
+        private void GenerateKey(FileStream keyFileStream)
         {
             keyFileStream.Position = 16;
             ushort[] keyData = new ushort[52];
@@ -58,9 +94,9 @@ namespace IDEAEncryprion
         }
 
         /// <summary>
-        /// Аддитивная инверсия числа
+        /// Additive inversion of a number
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Number</param>
         /// <returns></returns>
         private ushort AdditiveInversion(ushort value)
         {
@@ -68,9 +104,9 @@ namespace IDEAEncryprion
         }
 
         /// <summary>
-        /// Мультипликативная инверсия числа
+        /// Multiplicative inversion of the number
         /// </summary>
-        /// <param name="value">Число</param>
+        /// <param name="value">Number</param>
         /// <returns></returns>
         private ushort MultiplicativeInversion(ushort value)
         {
@@ -80,9 +116,9 @@ namespace IDEAEncryprion
         /// <summary>
         /// Быстрое возведение в степень по модулю
         /// </summary>
-        /// <param name="value">Число</param>
-        /// <param name="pow">Степень</param>
-        /// <param name="mod">Модуль</param>
+        /// <param name="value">Number</param>
+        /// <param name="pow">Pow</param>
+        /// <param name="mod">Module</param>
         /// <returns></returns>
         private ushort BinPow(ushort value, int pow, int mod)
         {

@@ -17,12 +17,13 @@ namespace FileEncryptor
         public DecryptionForm(MainForm form)
         {
             InitializeComponent();
+            textBoxKeyFile.ReadOnly = true;
             this.mainForm = form;
         }
 
         private void buttonOK_Click(object sender, EventArgs e)
         {
-            if (textBoxKeyFile.Text.Length > 10 & !textBoxKeyFile.Text.Contains(' '))
+            if (textBoxKeyFile.Text.Length > 0)
             {
                 mainForm.KeyFilePath = textBoxKeyFile.Text;
                 this.DialogResult = DialogResult.OK;
@@ -49,9 +50,9 @@ namespace FileEncryptor
             if (fileDialog.ShowDialog() == DialogResult.OK)
             {
                 FileInfo info = new FileInfo(fileDialog.FileName);
-                textBoxKeyFile.Text = info.Name.ToString();
+                textBoxKeyFile.Text = info.FullName;
                 mainForm.textBoxLog.Text += "Selected key file: " + info.Name.ToString() + "\r\n";
-                mainForm.KeyFilePath = info.FullName.ToString();
+                //mainForm.KeyFilePath = info.FullName;
             }
         }
     }

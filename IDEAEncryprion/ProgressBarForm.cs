@@ -8,15 +8,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FileEncryptor
+namespace IDEAEncryprion
 {
     public partial class ProgressBarForm : Form
     {
-        MainForm mainForm;
-        public ProgressBarForm(MainForm mainForm)
+        public ProgressBarForm(long max, long min, int step)
         {
             InitializeComponent();
-            this.mainForm = mainForm;
+            progressBar1.Maximum = (int)max;
+            progressBar1.Minimum = (int)min;
+            progressBar1.Step = step;
+        }
+
+        public void Step()
+        {
+            progressBar1.Value += progressBar1.Step;
         }
     }
 }
