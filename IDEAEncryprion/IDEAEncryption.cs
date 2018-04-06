@@ -31,9 +31,9 @@ namespace IDEAEncryprion
             //{
                 //progressBarForm.ShowDialog();
                 GenerateKey();
-            var md5 = MD5.Create().ComputeHash(srcFileStream);
+                var md5 = MD5.Create().ComputeHash(srcFileStream);
 
-            CreateKeyFile(srcFileStream, keyFileStream, extension, md5);
+                CreateKeyFile(srcFileStream, keyFileStream, extension, md5);
 
                 //запись флага шифрования в зашифрованный файл
                 encryptedFileStream.WriteByte(1);

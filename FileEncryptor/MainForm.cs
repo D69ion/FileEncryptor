@@ -47,18 +47,20 @@ namespace FileEncryptor
             if (fileDialog.ShowDialog() == DialogResult.OK)
             {
                 FileInfo info = new FileInfo(fileDialog.FileName);
-                textBoxFileName.Text = info.Name.ToString();
-                textBoxFilePath.Text = info.FullName.ToString();
+                textBoxFileName.Text = info.Name;
+                textBoxFilePath.Text = info.FullName;
                 SrcFilePath = info.FullName;
                 FileName = Path.GetFileNameWithoutExtension(info.FullName);
                 FileExtension = Path.GetExtension(info.FullName);
                 if (info.Extension.Equals(".encryp"))
                 {
                     buttonDecrypt.Enabled = true;
+                    buttonEncrypt.Enabled = false;
                 }
                 else
                 {
                     buttonEncrypt.Enabled = true;
+                    buttonDecrypt.Enabled = false;
                 }
                 textBoxLog.Text += "Selected file: " + info.Name.ToString() + "\r\n";
             }
@@ -76,22 +78,22 @@ namespace FileEncryptor
                     case 1:
                         {
                             //создание файловых потоков
-                            using (FileStream srcFile = File.Open(SrcFilePath, FileMode.Open, FileAccess.Read),
-                                              resFile = File.Create(SavePath + "\\" + FileName + ".encryp"),
-                                              keyFile = File.Create(SavePath + "\\" + FileName + ".key"))
+                            using (FileStream srcFileStream = File.Open(SrcFilePath, FileMode.Open, FileAccess.Read),
+                                              resFileStream = File.Create(SavePath + "\\" + FileName + ".encryp"),
+                                              keyFileStream = File.Create(SavePath + "\\" + FileName + ".key"))
                             {
                                 //вызовы функций шифрования
                                 IDEAEncryption encryption = new IDEAEncryption();
-                                encryption.Encrypt(srcFile, resFile, keyFile, FileExtension);
+                                encryption.Encrypt(srcFileStream, resFileStream, keyFileStream, FileExtension);
                             }
                             break;
                         }
                     case 2:
                         {
                             //создание файловых потоков
-                            using (FileStream srcFile = File.Open(SrcFilePath, FileMode.Open, FileAccess.Read),
-                                              resFile = File.Create(SavePath + "\\" + FileName + ".encryp"),
-                                              keyFile = File.Create(SavePath + "\\" + FileName + ".key"))
+                            using (FileStream srcFileStream = File.Open(SrcFilePath, FileMode.Open, FileAccess.Read),
+                                              resFileStream = File.Create(SavePath + "\\" + FileName + ".encryp"),
+                                              keyFileStream = File.Create(SavePath + "\\" + FileName + ".key"))
                             {
                                 //вызовы функций шифрования
 
@@ -103,7 +105,11 @@ namespace FileEncryptor
                 //очищение textbox и полей данных
                 textBoxFileName.Clear();
                 textBoxFilePath.Clear();
+                FileExtension = "";
+                SavePath = "";
+                SrcFilePath = "";
                 FileName = "";
+                KeyFilePath = "";
                 EncryptionFlag = 0;
 
                 //вывод информации
@@ -156,6 +162,12 @@ namespace FileEncryptor
                             return;
                         }
                     }
+                    byte[] data = new byte[100];
+                    keyFileStream.Seek(120, SeekOrigin.Begin);
+                    keyFileStream.Read(data, 0, (int)(keyFileStream.Length - 120));
+                    FileExtension = BitConverter.ToString(data);
+                    FileInfo fileInfo = new FileInfo(SrcFilePath);
+                    FileName = Path.GetFileNameWithoutExtension(fileInfo.FullName);
                 }
 
                 switch (EncryptionFlag)
@@ -163,17 +175,26 @@ namespace FileEncryptor
                     case 1:
                         {
                             //создание файловых потоков
+                            using (FileStream srcFileStream = new FileStream(SrcFilePath, FileMode.Open, FileAccess.Read),
+                                              keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
+                                              resFileStream = File.Create(SavePath + "\\" + FileName + FileExtension))
+                            {
+                                //вызовы функций дешифровки
+                                //IDEADecryption iDEADecryption
 
-                            //вызовы функций дешифровки
-                            //IDEADecryption iDEADecryption
+                            }
                             break;
                         }
                     case 2:
                         {
                             //создание файловых потоков
+                            using (FileStream srcFileStream = new FileStream(SrcFilePath, FileMode.Open, FileAccess.Read),
+                                              keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
+                                              resFileStream = File.Create(SavePath + "\\" + FileName + FileExtension))
+                            {
+                                //вызовы функций дешифровки
 
-                            //вызовы функций дешифровки
-
+                            }
                             break;
                         }
                 }
@@ -181,6 +202,9 @@ namespace FileEncryptor
                 //очищение textbox и полей данных
                 textBoxFileName.Clear();
                 textBoxFilePath.Clear();
+                FileExtension = "";
+                SavePath = "";
+                SrcFilePath = "";
                 FileName = "";
                 KeyFilePath = "";
                 EncryptionFlag = 0;

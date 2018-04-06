@@ -50,7 +50,32 @@ namespace IDEAEncryprion
         /// <param name="i">Key index</param>
         private void DecryptionRound(ushort[] blocks, int i)
         {
-
+            if (blocks[0] == 0)
+                blocks[0] = (ushort)((65536 * Key[i]) % 65537);
+            else
+                blocks[0] = (ushort)((blocks[0] * Key[i]) % 65537);
+            blocks[1] = (ushort)((blocks[1] + Key[i + 1]) % 65536);
+            blocks[2] = (ushort)((blocks[2] + Key[i + 2]) % 65536);
+            if (blocks[3] == 0)
+                blocks[3] = (ushort)((65536 * Key[i]) % 65537);
+            else
+                blocks[3] = (ushort)((blocks[3] * Key[i + 3]) % 65537);
+            ushort temp1 = (ushort)(blocks[0] ^ blocks[2]);
+            ushort temp2 = (ushort)(blocks[1] ^ blocks[3]);
+            if (temp1 == 0)
+                temp1 = (ushort)((65536 * Key[i + 4]) % 65537);
+            else
+                temp1 = (ushort)((temp1 * Key[i + 4]) % 65537);
+            temp2 = (ushort)((temp1 + temp2) % 65536);
+            if (temp2 == 0)
+                temp2 = (ushort)((65536 * Key[i + 5]) % 65537);
+            else
+                temp2 = (ushort)((temp2 * Key[i + 5]) % 65537);
+            temp1 = (ushort)((temp1 + temp2) % 65536);
+            blocks[0] = (ushort)(blocks[0] ^ temp2);
+            blocks[1] = (ushort)(blocks[1] ^ temp1);
+            blocks[2] = (ushort)(blocks[2] ^ temp2);
+            blocks[3] = (ushort)(blocks[3] ^ temp1);
         }
 
         /// <summary>
@@ -59,6 +84,16 @@ namespace IDEAEncryprion
         /// <param name="blocks">Data blocks</param>
         private void DecryptionLastRound(ushort[] blocks)
         {
+            if (blocks[0] == 0)
+                blocks[0] = (ushort)((65536 * Key[48]) % 65537);
+            else
+                blocks[0] = (ushort)((blocks[0] * Key[48]) % 65537);
+            blocks[1] = (ushort)((blocks[1] + Key[49]) % 65536);
+            blocks[2] = (ushort)((blocks[2] + Key[50]) % 65536);
+            if (blocks[3] == 0)
+                blocks[3] = (ushort)((65536 * Key[51]) % 65537);
+            else
+                blocks[3] = (ushort)((blocks[3] * Key[51]) % 65537);
 
         }
 
