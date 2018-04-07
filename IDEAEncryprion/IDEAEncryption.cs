@@ -21,9 +21,9 @@ namespace IDEAEncryprion
         /// <summary>
         /// Encrypt file with IDEA encryption
         /// </summary>
-        /// <param name="srcFileStream">Input source file stream</param>
-        /// <param name="encryptedFileStream">Output encrypted file stream</param>
-        /// <param name="keyFileStream">Output key file stream</param>
+        /// <param name="srcFileStream">Input file stream of the source file</param>
+        /// <param name="encryptedFileStream">Output file stream of the encrypted file</param>
+        /// <param name="keyFileStream">Output file stream of the key file</param>
         /// <param name="extension">Source file extension</param>
         public void Encrypt(FileStream srcFileStream, FileStream encryptedFileStream, FileStream keyFileStream, string extension)
         {
@@ -54,20 +54,19 @@ namespace IDEAEncryprion
         /// <summary>
         /// First 8 rounds of encryption
         /// </summary>
-        /// <param name="srcFileStream">Input source file stream</param>
-        /// <param name="encryptedFileStream">Output encrypted file stream</param>
+        /// <param name="srcFileStream">Input file stream of the source file</param>
+        /// <param name="encryptedFileStream">Output file stream of the encrypted file</param>
         /// <param name="startIndex">The position from which the reading starts in the source file stream</param>
         private void EncryptionRounds(FileStream srcFileStream, FileStream encryptedFileStream, long startIndex)
         {
             byte[] data = new byte[8];
-            //srcFileStream.Position = startIndex;
             srcFileStream.Seek(startIndex, SeekOrigin.Begin);
             sbyte bytesCount = (sbyte)srcFileStream.Read(data, 0, 8);
             if (bytesCount == -1)
                 return;
             if (bytesCount < 8)
             {
-                for(int i = bytesCount - 1; i < 8; i++)
+                for(int i = bytesCount; i < 8; i++)
                 {
                     data[i] = 0;
                 }
@@ -158,8 +157,8 @@ namespace IDEAEncryprion
         /// <summary>
         /// Create key file
         /// </summary>
-        /// <param name="srcFileStream">Input source file stream</param>
-        /// <param name="keyFileStream">Output key file stream</param>
+        /// <param name="srcFileStream">Input file stream of the source file</param>
+        /// <param name="keyFileStream">Output file stream of the key file</param>
         /// <param name="extension">Source file extension</param>
         private void CreateKeyFile(FileStream srcFileStream, FileStream keyFileStream, string extension, byte[] md5)
         {

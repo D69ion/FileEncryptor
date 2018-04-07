@@ -140,19 +140,8 @@ namespace FileEncryptor
                 {
                     EncryptionFlag = (byte)encryptedFileStream.ReadByte();
 
-                    byte[] hashKeyFile = new byte[16];
-                    byte[] hashEncryptedFile = new byte[16];
-                    keyFileStream.Seek(0, SeekOrigin.Begin);
-                    encryptedFileStream.Seek(1, SeekOrigin.Begin);
-                    keyFileStream.Read(hashKeyFile, 0, 16);
-                    encryptedFileStream.Read(hashEncryptedFile, 0, 16);
-                    bool b = true;
-                    for(int i = 0; i < 16; i++)
-                    {
-                        if (hashEncryptedFile[i] != hashKeyFile[i])
-                            b = false;
-                    }
-                    if (!b)
+                    //сравнение хешей
+                    if (!CompareHash(keyFileStream, encryptedFileStream))
                     {
                         InfoForm form = new InfoForm("The key file does not math the encrypted file");
                         form.ShowDialog();
@@ -162,10 +151,11 @@ namespace FileEncryptor
                             return;
                         }
                     }
-                    byte[] data = new byte[100];
+
+                    byte[] data = new byte[keyFileStream.Length - 120];
                     keyFileStream.Seek(120, SeekOrigin.Begin);
                     keyFileStream.Read(data, 0, (int)(keyFileStream.Length - 120));
-                    FileExtension = BitConverter.ToString(data);
+                    FileExtension = Encoding.ASCII.GetString(data);
                     FileInfo fileInfo = new FileInfo(SrcFilePath);
                     FileName = Path.GetFileNameWithoutExtension(fileInfo.FullName);
                 }
@@ -180,8 +170,8 @@ namespace FileEncryptor
                                               resFileStream = File.Create(SavePath + "\\" + FileName + FileExtension))
                             {
                                 //вызовы функций дешифровки
-                                //IDEADecryption iDEADecryption
-
+                                IDEADecryption decryption = new IDEADecryption();
+                                decryption.Decrypt(srcFileStream, resFileStream, keyFileStream);
                             }
                             break;
                         }
@@ -233,6 +223,29 @@ namespace FileEncryptor
                 SavePath = browserDialog.SelectedPath.ToString();
                 textBoxLog.Text += "Save folder is selected: " + browserDialog.SelectedPath.ToString() + "\r\n";
             }
+        }
+
+        /// <summary>
+        /// Compare hash from key file with hash from encrypted file
+        /// </summary>
+        /// <param name="keyFileStream">Key file stream</param>
+        /// <param name="encryptedFileStream">File stream of the encrypted file</param>
+        /// <returns></returns>
+        private bool CompareHash(FileStream keyFileStream, FileStream encryptedFileStream)
+        {
+            byte[] hashKeyFile = new byte[16];
+            byte[] hashEncryptedFile = new byte[16];
+            keyFileStream.Seek(0, SeekOrigin.Begin);
+            encryptedFileStream.Seek(1, SeekOrigin.Begin);
+            keyFileStream.Read(hashKeyFile, 0, 16);
+            encryptedFileStream.Read(hashEncryptedFile, 0, 16);
+            bool b = true;
+            for (int i = 0; i < 16; i++)
+            {
+                if (hashEncryptedFile[i] != hashKeyFile[i])
+                    b = false;
+            }
+            return b;
         }
     }
 }
