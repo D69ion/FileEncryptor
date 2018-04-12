@@ -1,14 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using IDEAEncryprion;
+using ElgamalEncryption;
 
 namespace FileEncryptor
 {
@@ -22,7 +17,7 @@ namespace FileEncryptor
             textBoxFileName.ReadOnly = true;
             textBoxFilePath.ReadOnly = true;
             textBoxLog.ReadOnly = true;
-            SavePath = Environment.SpecialFolder.MyDocuments.ToString();
+            SavePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             FileName = "";
             KeyFilePath = "";
             EncryptionFlag = 0;
@@ -96,7 +91,8 @@ namespace FileEncryptor
                                               keyFileStream = File.Create(SavePath + "\\" + FileName + ".key"))
                             {
                                 //вызовы функций шифрования
-
+                                ElGamalEncryption elGamalEncryption = new ElGamalEncryption();
+                                elGamalEncryption.Encrypt(srcFileStream, keyFileStream, resFileStream, FileExtension);
                             }
                             break;
                         }
@@ -106,11 +102,11 @@ namespace FileEncryptor
                 textBoxFileName.Clear();
                 textBoxFilePath.Clear();
                 FileExtension = "";
-                SavePath = "";
                 SrcFilePath = "";
                 FileName = "";
                 KeyFilePath = "";
                 EncryptionFlag = 0;
+                buttonEncrypt.Enabled = false;
 
                 //вывод информации
                 string info = "File was encrypted and located on: \r\n" + SavePath;
@@ -151,23 +147,26 @@ namespace FileEncryptor
                             return;
                         }
                     }
-
-                    byte[] data = new byte[keyFileStream.Length - 120];
-                    keyFileStream.Seek(120, SeekOrigin.Begin);
-                    keyFileStream.Read(data, 0, (int)(keyFileStream.Length - 120));
-                    FileExtension = Encoding.ASCII.GetString(data);
-                    FileInfo fileInfo = new FileInfo(SrcFilePath);
-                    FileName = Path.GetFileNameWithoutExtension(fileInfo.FullName);
                 }
 
                 switch (EncryptionFlag)
                 {
                     case 1:
                         {
+                            //взятие расширения
+                            using (FileStream keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read))
+                            {                               
+                                byte[] data = new byte[keyFileStream.Length - 120];
+                                keyFileStream.Seek(120, SeekOrigin.Begin);
+                                keyFileStream.Read(data, 0, (int)(keyFileStream.Length - 120));
+                                FileExtension = Encoding.ASCII.GetString(data);
+                                FileInfo fileInfo = new FileInfo(SrcFilePath);
+                                FileName = Path.GetFileNameWithoutExtension(fileInfo.FullName);
+                            }
                             //создание файловых потоков
                             using (FileStream srcFileStream = new FileStream(SrcFilePath, FileMode.Open, FileAccess.Read),
-                                              keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
-                                              resFileStream = File.Create(SavePath + "\\" + FileName + FileExtension))
+                                                  keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
+                                                  resFileStream = File.Create(SavePath + "\\" + FileName + FileExtension))
                             {
                                 //вызовы функций дешифровки
                                 IDEADecryption decryption = new IDEADecryption();
@@ -193,11 +192,11 @@ namespace FileEncryptor
                 textBoxFileName.Clear();
                 textBoxFilePath.Clear();
                 FileExtension = "";
-                SavePath = "";
                 SrcFilePath = "";
                 FileName = "";
                 KeyFilePath = "";
                 EncryptionFlag = 0;
+                buttonDecrypt.Enabled = false;
 
                 //вывод информации
                 string info = "File was decrypted and located on: \r\n" + SavePath;

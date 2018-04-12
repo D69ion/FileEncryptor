@@ -12,41 +12,41 @@ namespace IDEAEncryprion
     public class IDEADecryption
     {
         public ushort[] Key { get; set; }
-        const int mod = 65537;//2^16 + 1
+        const int mod = 65537; //2^16 + 1
 
         /// <summary>
         /// Decrypt the file encrypted IDEA encryption
         /// </summary>
-        /// <param name="srcFileStream"></param>
-        /// <param name="decryptedFileStream"></param>
+        /// <param name="srcFileStream">Input file stream of the encrypted file</param>
+        /// <param name="resFileStream">Output file stream of the decrypted file</param>
         /// <param name="keyFileStream">Input file stream of the key file</param>
-        public void Decrypt(FileStream srcFileStream, FileStream decryptedFileStream, FileStream keyFileStream)
+        public void Decrypt(FileStream srcFileStream, FileStream resFileStream, FileStream keyFileStream)
         {
             GenerateKey(keyFileStream);
 
             for (long i = 17; i < srcFileStream.Length; i += 8)//неточность
             {
-                DecryptionRounds(srcFileStream, decryptedFileStream, i);
+                DecryptionRounds(srcFileStream, resFileStream, i);
             }
-            decryptedFileStream.Flush();
+            resFileStream.Flush();
         }
 
         /// <summary>
         /// First 8 rounds of decryption
         /// </summary>
         /// <param name="srcFileStream">Input file stream of the encrypted file</param>
-        /// <param name="decryptedFileStream">Output file stream of the decrypted file</param>
+        /// <param name="resFileStream">Output file stream of the decrypted file</param>
         /// <param name="startIndex">The position from which the reading starts in the source file stream</param>
-        private void DecryptionRounds(FileStream srcFileStream, FileStream decryptedFileStream, long startIndex)
+        private void DecryptionRounds(FileStream srcFileStream, FileStream resFileStream, long startIndex)
         {
             byte[] data = new byte[8];
             srcFileStream.Seek(startIndex, SeekOrigin.Begin);
-            sbyte bytescount = (sbyte)srcFileStream.Read(data, 0, 8);
-            if (bytescount == -1)
+            sbyte bytesCount = (sbyte)srcFileStream.Read(data, 0, 8);
+            if (bytesCount == -1)
                 return;
-            if (bytescount < 8)
+            if (bytesCount < 8)
             {
-                for(int i = bytescount; i < 8; i++)
+                for(int i = bytesCount; i < 8; i++)
                 {
                     data[i] = 0;
                 }
@@ -71,14 +71,15 @@ namespace IDEAEncryprion
             for (int i = 0; i < 8; i += 2)
             {
                 temp = BitConverter.GetBytes(blocks[i / 2]);
-                byte temp1 = temp[0];
-                byte temp2 = temp[1];
-                data[i] = temp1;
-                data[i + 1] = temp2;
+                data[i] = temp[0];
+                data[i + 1] = temp[1];
             }
 
             //запись в файл
-            decryptedFileStream.Write(data, 0, 8);
+            if (bytesCount < 8)
+                resFileStream.Write(data, 0, bytesCount);
+            else
+                resFileStream.Write(data, 0, 8);
         }
 
         /// <summary>
@@ -142,13 +143,13 @@ namespace IDEAEncryprion
         private void GenerateKey(FileStream keyFileStream)
         {
             Key = new ushort[52];
-            keyFileStream.Position = 16;
+            keyFileStream.Seek(16, SeekOrigin.Begin);
             ushort[] keyData = new ushort[52];
-            byte[] temp = new byte[2];
+            byte[] temp = new byte[104];
+            keyFileStream.Read(temp, 0, 104);
             for(int i = 0; i < 52; i++)
             {
-                keyFileStream.Read(temp, 0, 2);
-                keyData[i] = BitConverter.ToUInt16(temp, 0);
+                keyData[i] = BitConverter.ToUInt16(temp, i * 2);
             }
 
             sbyte count = -1;
