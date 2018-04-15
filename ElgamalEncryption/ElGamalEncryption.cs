@@ -35,6 +35,7 @@ namespace ElgamalEncryption
 
             resFileStream.Seek(0, SeekOrigin.Begin);
             resFileStream.WriteByte(2);
+            resFileStream.Write(md5, 0, md5.Length);
 
             byte[] temp = new byte[2];
             byte[] dataTemp = new byte[4];
