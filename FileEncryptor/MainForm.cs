@@ -65,9 +65,42 @@ namespace FileEncryptor
         {
             EncryptionForm encryptionForm = new EncryptionForm(this);
             encryptionForm.ShowDialog();
+            FileInfo fileInfo = new FileInfo(SrcFilePath);
             if(encryptionForm.DialogResult == DialogResult.OK)
             {
                 encryptionForm.Dispose();
+                if (fileInfo.Length > 10240 && EncryptionFlag == 2)
+                {
+                    string text = "The file size for the selected method should not exceed 10 KB";
+                    string caption1 = "Error";
+                    MessageBox.Show(text, caption1, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    //очищение textbox и полей данных
+                    textBoxFileName.Clear();
+                    textBoxFilePath.Clear();
+                    FileExtension = "";
+                    SrcFilePath = "";
+                    FileName = "";
+                    KeyFilePath = "";
+                    EncryptionFlag = 0;
+                    buttonEncrypt.Enabled = false;
+                    return;
+                }
+                if (fileInfo.Length > 1024 * 1024 * 4 && EncryptionFlag == 1)
+                {
+                    string text = "The file size for the selected method should not exceed 4 GB";
+                    string caption1 = "Error";
+                    MessageBox.Show(text, caption1, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    //очищение textbox и полей данных
+                    textBoxFileName.Clear();
+                    textBoxFilePath.Clear();
+                    FileExtension = "";
+                    SrcFilePath = "";
+                    FileName = "";
+                    KeyFilePath = "";
+                    EncryptionFlag = 0;
+                    buttonEncrypt.Enabled = false;
+                    return;
+                }
                 switch (EncryptionFlag)
                 {
                     case 1:
@@ -110,13 +143,9 @@ namespace FileEncryptor
 
                 //вывод информации
                 string info = "File was encrypted and located on: \r\n" + SavePath;
+                string caption = "Encryption complete";
                 textBoxLog.Text += info + "\r\n";
-                InfoForm infoForm = new InfoForm(info);
-                infoForm.ShowDialog();
-                if (infoForm.DialogResult == DialogResult.OK)
-                {
-                    infoForm.Dispose();
-                }
+                MessageBox.Show(info, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             if (encryptionForm.DialogResult == DialogResult.Cancel)
             {
@@ -139,13 +168,9 @@ namespace FileEncryptor
                     //сравнение хешей
                     if (!CompareHash(keyFileStream, encryptedFileStream))
                     {
-                        InfoForm form = new InfoForm("The key file does not math the encrypted file");
-                        form.ShowDialog();
-                        if (form.DialogResult == DialogResult.OK)
-                        {
-                            form.Dispose();
-                            return;
-                        }
+                        string text = "The key file does not math the encrypted file";
+                        string caption1 = "Error";
+                        MessageBox.Show(text, caption1, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
 
@@ -165,8 +190,8 @@ namespace FileEncryptor
                             }
                             //создание файловых потоков
                             using (FileStream srcFileStream = new FileStream(SrcFilePath, FileMode.Open, FileAccess.Read),
-                                                  keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
-                                                  resFileStream = File.Create(SavePath + "\\" + FileName + FileExtension))
+                                              keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
+                                              resFileStream = File.Create(SavePath + "\\" + FileName + FileExtension))
                             {
                                 //вызовы функций дешифровки
                                 IDEADecryption decryption = new IDEADecryption();
@@ -176,13 +201,23 @@ namespace FileEncryptor
                         }
                     case 2:
                         {
+                            using (FileStream keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read))
+                            {
+                                byte[] data = new byte[keyFileStream.Length - 24];
+                                keyFileStream.Seek(24, SeekOrigin.Begin);
+                                keyFileStream.Read(data, 0, (int)(keyFileStream.Length - 24));
+                                FileExtension = Encoding.ASCII.GetString(data);
+                                FileInfo fileInfo = new FileInfo(SrcFilePath);
+                                FileName = Path.GetFileNameWithoutExtension(fileInfo.FullName);
+                            }
                             //создание файловых потоков
                             using (FileStream srcFileStream = new FileStream(SrcFilePath, FileMode.Open, FileAccess.Read),
                                               keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
                                               resFileStream = File.Create(SavePath + "\\" + FileName + FileExtension))
                             {
                                 //вызовы функций дешифровки
-
+                                ElGamalDecryption elGamalDecryption = new ElGamalDecryption();
+                                elGamalDecryption.Decrypt(srcFileStream, keyFileStream, resFileStream);
                             }
                             break;
                         }
@@ -200,12 +235,8 @@ namespace FileEncryptor
 
                 //вывод информации
                 string info = "File was decrypted and located on: \r\n" + SavePath;
-                InfoForm infoForm = new InfoForm(info);
-                infoForm.ShowDialog();
-                if (infoForm.DialogResult == DialogResult.OK)
-                {
-                    infoForm.Dispose();
-                }
+                string caption = "Decyption complete";
+                MessageBox.Show(info, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             if (decryptionForm.DialogResult == DialogResult.Cancel)
             {
