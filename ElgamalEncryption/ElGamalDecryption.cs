@@ -1,9 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 using System.Numerics;
 
 namespace ElgamalEncryption
@@ -20,7 +16,7 @@ namespace ElgamalEncryption
             srcFileStream.Seek(17, SeekOrigin.Begin);
             resFileStream.Seek(0, SeekOrigin.Begin);
             byte[] data = new byte[8];
-            for(long i = 17; i < srcFileStream.Length; i++)
+            for(long i = 17; i < srcFileStream.Length; i += 8)
             {
                 srcFileStream.Read(data, 0, 8);
                 int a = BitConverter.ToInt32(data, 0);

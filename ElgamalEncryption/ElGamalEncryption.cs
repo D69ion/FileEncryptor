@@ -162,7 +162,7 @@ namespace ElgamalEncryption
         private int PrimitiveRoot(int number)
         {
             List<int> fact = new List<int>();
-            int phi = (int)Eyler(number), n = phi;
+            int phi = (int)EylerFunction(number), n = phi;
             for (int i = 2; i * i <= n; ++i)
                 if (n % i == 0)
                 {
@@ -188,7 +188,7 @@ namespace ElgamalEncryption
         /// </summary>
         /// <param name="number">The number for which it is necessary to find the eyler function</param>
         /// <returns></returns>
-        private long Eyler(long number)
+        private long EylerFunction(long number)
         {
             long result = number;
             for (long i = 2; i * i <= number; i++)
@@ -219,26 +219,6 @@ namespace ElgamalEncryption
                     res = (res * value) % mod;
                 pow >>= 1;
                 value = (value * value) % mod;
-            }
-            return res;
-        }
-
-        /// <summary>
-        /// Binary exponentiation
-        /// </summary>
-        /// <param name="value">The number that must be raised to the power</param>
-        /// <param name="pow">The pow to which it is necessary to build a number</param>
-        /// <returns></returns>
-        private static long BinPow(long value, long pow)
-        {
-            long res = 1;
-            while (pow != 0)
-            {
-                if (pow % 2 == 1)
-                    res *= value;
-                value *= value;
-                pow >>= 1;
-                //pow /= 2;
             }
             return res;
         }

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 
 
 namespace IDEAEncryprion
@@ -22,19 +21,22 @@ namespace IDEAEncryprion
         /// <param name="extension">Source file extension</param>
         public void Encrypt(FileStream srcFileStream, FileStream resFileStream, FileStream keyFileStream, string extension)
         {
-            GenerateKey();
+            GenerateKeys();
             var md5 = MD5.Create().ComputeHash(srcFileStream);
 
-            CreateKeyFile(keyFileStream, extension, md5);
+            CreateKeyFile(keyFileStream, md5, extension);
 
             //запись флага шифрования в зашифрованный файл
+            resFileStream.Seek(0, SeekOrigin.Begin);
             resFileStream.WriteByte(1);
 
             //запись MD5 хеша в зашифрованный файл
             resFileStream.Write(md5, 0, md5.Length);
 
             //шифрование файла
-            for (long i = 0; i < srcFileStream.Length; i += 8)//неточность
+            srcFileStream.Seek(0, SeekOrigin.Begin);
+            resFileStream.Seek(17, SeekOrigin.Begin);
+            for (long i = 0; i < srcFileStream.Length; i += 8)
             {
                 EncryptionRounds(srcFileStream, resFileStream, i);
             }
@@ -50,7 +52,7 @@ namespace IDEAEncryprion
         private void EncryptionRounds(FileStream srcFileStream, FileStream resFileStream, long startIndex)
         {
             byte[] data = new byte[8];
-            srcFileStream.Seek(startIndex, SeekOrigin.Begin);
+            //srcFileStream.Seek(startIndex, SeekOrigin.Begin);
             sbyte bytesCount = (sbyte)srcFileStream.Read(data, 0, 8);
             if (bytesCount == -1)
                 return;
@@ -106,7 +108,7 @@ namespace IDEAEncryprion
             blocks[1] = (ushort)((blocks[1] + Key[i + 1]) % 65536);
             blocks[2] = (ushort)((blocks[2] + Key[i + 2]) % 65536);
             if (blocks[3] == 0)
-                blocks[3] = (ushort)((65536 * Key[i]) % 65537);
+                blocks[3] = (ushort)((65536 * Key[i + 3]) % 65537);
             else
                 blocks[3] = (ushort)((blocks[3] * Key[i + 3]) % 65537);
             ushort temp1 = (ushort)(blocks[0] ^ blocks[2]);
@@ -151,9 +153,10 @@ namespace IDEAEncryprion
         /// <param name="keyFileStream">Output file stream of the key file</param>
         /// <param name="extension">Source file extension</param>
         /// <param name="md5">MD5 hash</param>
-        private void CreateKeyFile(FileStream keyFileStream, string extension, byte[] md5)
+        private void CreateKeyFile(FileStream keyFileStream, byte[] md5, string extension)
         {
             //запись MD5 хеша в файл с ключом
+            keyFileStream.Seek(0, SeekOrigin.Begin);
             keyFileStream.Write(md5, 0, md5.Length);
 
             //запись ключей в файл с ключом
@@ -172,7 +175,7 @@ namespace IDEAEncryprion
         /// <summary>
         /// Generate new encryption key
         /// </summary>
-        private void GenerateKey()
+        private void GenerateKeys()
         {
             byte[] byteKey = new byte[104];
             //создание 128 битного ключа

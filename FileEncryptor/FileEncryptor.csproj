@@ -84,6 +84,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="ClassDiagram.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -102,9 +103,9 @@
       <Project>{b2f06400-0e1f-426e-b98b-9d17f3cc99ab}</Project>
       <Name>ElgamalEncryption</Name>
     </ProjectReference>
-    <ProjectReference Include="..\IDEAEncryprion\IDEAEncryprion.csproj">
+    <ProjectReference Include="..\IDEAEncryprion\IDEAEncryption.csproj">
       <Project>{fa26b884-ac23-4989-898f-92c340f48ab0}</Project>
-      <Name>IDEAEncryprion</Name>
+      <Name>IDEAEncryption</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

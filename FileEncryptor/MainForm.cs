@@ -171,6 +171,8 @@ namespace FileEncryptor
                         string text = "The key file does not math the encrypted file";
                         string caption1 = "Error";
                         MessageBox.Show(text, caption1, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        KeyFilePath = "";
+                        return;
                     }
                 }
 

@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileEncryptor", "FileEncryptor\FileEncryptor.csproj", "{B86EE7CD-9E56-49C7-B3BD-C633CF4927AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IDEAEncryprion", "IDEAEncryprion\IDEAEncryprion.csproj", "{FA26B884-AC23-4989-898F-92C340F48AB0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IDEAEncryption", "IDEAEncryprion\IDEAEncryption.csproj", "{FA26B884-AC23-4989-898F-92C340F48AB0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElgamalEncryption", "ElgamalEncryption\ElgamalEncryption.csproj", "{B2F06400-0E1F-426E-B98B-9D17F3CC99AB}"
 EndProject
