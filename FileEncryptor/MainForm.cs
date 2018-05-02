@@ -57,7 +57,7 @@ namespace FileEncryptor
                     buttonEncrypt.Enabled = true;
                     buttonDecrypt.Enabled = false;
                 }
-                textBoxLog.Text += "Selected file: " + info.Name.ToString() + "\r\n";
+                textBoxLog.Text += DateTime.Now.ToString() + " Selected file: " + info.Name.ToString() + "\r\n";
             }
         }
 
@@ -75,13 +75,7 @@ namespace FileEncryptor
                     string caption1 = "Error";
                     MessageBox.Show(text, caption1, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     //очищение textbox и полей данных
-                    textBoxFileName.Clear();
-                    textBoxFilePath.Clear();
-                    FileExtension = "";
-                    SrcFilePath = "";
-                    FileName = "";
-                    KeyFilePath = "";
-                    EncryptionFlag = 0;
+                    ClearData();
                     buttonEncrypt.Enabled = false;
                     return;
                 }
@@ -91,13 +85,7 @@ namespace FileEncryptor
                     string caption1 = "Error";
                     MessageBox.Show(text, caption1, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     //очищение textbox и полей данных
-                    textBoxFileName.Clear();
-                    textBoxFilePath.Clear();
-                    FileExtension = "";
-                    SrcFilePath = "";
-                    FileName = "";
-                    KeyFilePath = "";
-                    EncryptionFlag = 0;
+                    ClearData();
                     buttonEncrypt.Enabled = false;
                     return;
                 }
@@ -132,19 +120,13 @@ namespace FileEncryptor
                 }
 
                 //очищение textbox и полей данных
-                textBoxFileName.Clear();
-                textBoxFilePath.Clear();
-                FileExtension = "";
-                SrcFilePath = "";
-                FileName = "";
-                KeyFilePath = "";
-                EncryptionFlag = 0;
+                ClearData();
                 buttonEncrypt.Enabled = false;
 
                 //вывод информации
                 string info = "File was encrypted and located on: \r\n" + SavePath;
                 string caption = "Encryption complete";
-                textBoxLog.Text += info + "\r\n";
+                textBoxLog.Text += DateTime.Now.ToString() + " " + info + "\r\n";
                 MessageBox.Show(info, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             if (encryptionForm.DialogResult == DialogResult.Cancel)
@@ -226,18 +208,13 @@ namespace FileEncryptor
                 }
 
                 //очищение textbox и полей данных
-                textBoxFileName.Clear();
-                textBoxFilePath.Clear();
-                FileExtension = "";
-                SrcFilePath = "";
-                FileName = "";
-                KeyFilePath = "";
-                EncryptionFlag = 0;
+                ClearData();
                 buttonDecrypt.Enabled = false;
 
                 //вывод информации
                 string info = "File was decrypted and located on: \r\n" + SavePath;
                 string caption = "Decyption complete";
+                textBoxLog.Text += DateTime.Now.ToString() + " " + info + "\r\n";
                 MessageBox.Show(info, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             if (decryptionForm.DialogResult == DialogResult.Cancel)
@@ -253,7 +230,7 @@ namespace FileEncryptor
             if (browserDialog.ShowDialog() == DialogResult.OK)
             {
                 SavePath = browserDialog.SelectedPath.ToString();
-                textBoxLog.Text += "Save folder is selected: " + browserDialog.SelectedPath.ToString() + "\r\n";
+                textBoxLog.Text += DateTime.Now.ToString() + " Save folder is selected: " + browserDialog.SelectedPath.ToString() + "\r\n";
             }
         }
 
@@ -271,13 +248,28 @@ namespace FileEncryptor
             encryptedFileStream.Seek(1, SeekOrigin.Begin);
             keyFileStream.Read(hashKeyFile, 0, 16);
             encryptedFileStream.Read(hashEncryptedFile, 0, 16);
-            bool b = true;
             for (int i = 0; i < 16; i++)
             {
                 if (hashEncryptedFile[i] != hashKeyFile[i])
-                    b = false;
+                {
+                    return false;
+                }
             }
-            return b;
+            return true;
+        }
+
+        /// <summary>
+        /// Clearing data fields
+        /// </summary>
+        private void ClearData()
+        {
+            textBoxFileName.Clear();
+            textBoxFilePath.Clear();
+            FileExtension = "";
+            SrcFilePath = "";
+            FileName = "";
+            KeyFilePath = "";
+            EncryptionFlag = 0;
         }
     }
 }
