@@ -150,14 +150,14 @@
             // selectFileToolStripMenuItem
             // 
             this.selectFileToolStripMenuItem.Name = "selectFileToolStripMenuItem";
-            this.selectFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.selectFileToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.selectFileToolStripMenuItem.Text = "Select File";
             this.selectFileToolStripMenuItem.Click += new System.EventHandler(this.Button_SelectFile_Click);
             // 
             // saveDirectoryToolStripMenuItem
             // 
             this.saveDirectoryToolStripMenuItem.Name = "saveDirectoryToolStripMenuItem";
-            this.saveDirectoryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveDirectoryToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.saveDirectoryToolStripMenuItem.Text = "Save Directory";
             this.saveDirectoryToolStripMenuItem.Click += new System.EventHandler(this.SaveDirectoryToolStripMenuItem_Click);
             // 
@@ -175,6 +175,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.menuStrip1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "File Encryptor";

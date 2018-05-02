@@ -102,6 +102,7 @@
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.label2);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "DecryptionForm";
             this.Text = "DecryptionForm";
             this.ResumeLayout(false);
