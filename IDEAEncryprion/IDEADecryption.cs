@@ -245,7 +245,7 @@ namespace IDEAEncryprion
         /// <param name="pow">Pow</param>
         /// <param name="mod">Module</param>
         /// <returns></returns>
-        private ushort BinPow(ushort value, int pow, int mod)
+        private ushort BinPowMod(ushort value, int pow, int mod)
         {
             long res = 1;
             long temp = 0;

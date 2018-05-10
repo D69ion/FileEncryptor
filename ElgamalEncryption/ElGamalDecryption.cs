@@ -9,7 +9,13 @@ namespace ElgamalEncryption
         private int P { get; set; } //случайное большое простое число
         private int X { get; set; } //число X такое, что  1 < X < P - 1 (открытый ключ)
         private const int mod = 65537;
-        
+
+        /// <summary>
+        /// Decrypt file with ElGamal scheme
+        /// </summary>
+        /// <param name="srcFileStream">Input file stream of the source file</param>
+        /// <param name="keyFileStream">Output file stream of the key file</param>
+        /// <param name="resFileStream">Output file stream of the decrypted file</param>
         public void Decrypt(FileStream srcFileStream, FileStream keyFileStream, FileStream resFileStream)
         {
             GetKeys(keyFileStream);
@@ -27,6 +33,10 @@ namespace ElgamalEncryption
             resFileStream.Flush();
         }
 
+        /// <summary>
+        /// Read keys from key-file
+        /// </summary>
+        /// <param name="keyFileStream">Output file stream of the key file</param>
         public void GetKeys(FileStream keyFileStream)
         {
             keyFileStream.Seek(16, SeekOrigin.Begin);

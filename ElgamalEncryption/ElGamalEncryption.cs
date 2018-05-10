@@ -98,12 +98,14 @@ namespace ElgamalEncryption
                     {
                         list.Add(number);
                     }
+
+            P = list[random.Next(0, list.Count)];
+
             primes = null;
-            //list = null;
+            list = null;
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            P = list[random.Next(0, list.Count)];
             G = PrimitiveRoot(P);
             X = random.Next(1, P - 1);
             Y = (int)BinPowMod(G, X, P);
