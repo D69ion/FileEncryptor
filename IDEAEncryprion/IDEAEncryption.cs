@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,10 +36,10 @@ namespace IDEAEncryprion
 
             //шифрование файла
             srcFileStream.Seek(0, SeekOrigin.Begin);
-            resFileStream.Seek(17, SeekOrigin.Begin);
+            resFileStream.WriteByte((byte)(8 -(srcFileStream.Length % 8)));
             for (long i = 0; i < srcFileStream.Length; i += 8)
             {
-                EncryptionRounds(srcFileStream, resFileStream, i);
+                EncryptionRounds(srcFileStream, resFileStream);
             }
             resFileStream.Flush();
         }
@@ -49,7 +50,7 @@ namespace IDEAEncryprion
         /// <param name="srcFileStream">Input file stream of the source file</param>
         /// <param name="resFileStream">Output file stream of the encrypted file</param>
         /// <param name="startIndex">The position from which the reading starts in the source file stream</param>
-        private void EncryptionRounds(FileStream srcFileStream, FileStream resFileStream, long startIndex)
+        private void EncryptionRounds(FileStream srcFileStream, FileStream resFileStream)
         {
             byte[] data = new byte[8];
             //srcFileStream.Seek(startIndex, SeekOrigin.Begin);
@@ -58,7 +59,7 @@ namespace IDEAEncryprion
                 return;
             if (bytesCount < 8)
             {
-                for(int i = bytesCount; i < 8; i++)
+                for (int i = bytesCount; i < 8; i++)
                 {
                     data[i] = 0;
                 }
@@ -66,13 +67,13 @@ namespace IDEAEncryprion
 
             //преобразование в 16 битные(2 байтные) блоки
             ushort[] blocks = new ushort[4];
-            for(int i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 blocks[i] = BitConverter.ToUInt16(data, i * 2);
             }
 
             //раунды шифрования
-            for(int i = 0; i < 48; i += 6)
+            for (int i = 0; i < 48; i += 6)
             {
                 EncryptionRound(blocks, i);
             }
@@ -80,17 +81,17 @@ namespace IDEAEncryprion
 
             //преобразование обратно в байты
             byte[] temp = null;
-            for(int i = 0; i < 8; i += 2)
+            for (int i = 0; i < 8; i += 2)
             {
                 temp = BitConverter.GetBytes(blocks[i / 2]);
                 data[i] = temp[0];
                 data[i + 1] = temp[1];
             }
 
-            //запись в файл
-            if (bytesCount < 8)
-                resFileStream.Write(data, 0, bytesCount);
-            else
+            ////запись в файл
+            //if (bytesCount < 8)
+            //    resFileStream.Write(data, 0, bytesCount);
+            //else
                 resFileStream.Write(data, 0, 8);
         }
 
@@ -102,31 +103,34 @@ namespace IDEAEncryprion
         private void EncryptionRound(ushort[] blocks, int i)
         {
             if (blocks[0] == 0)
-                blocks[0] = (ushort)((65536 * Key[i]) % 65537);
+                blocks[0] = (ushort)(((long)65536 * Key[i]) % 65537);
             else
-                blocks[0] = (ushort)((blocks[0] * Key[i]) % 65537);
-            blocks[1] = (ushort)((blocks[1] + Key[i + 1]) % 65536);
-            blocks[2] = (ushort)((blocks[2] + Key[i + 2]) % 65536);
+                blocks[0] = (ushort)(((long)blocks[0] * Key[i]) % 65537);
+            blocks[1] = (ushort)(((long)blocks[1] + Key[i + 1]) % 65536);
+            blocks[2] = (ushort)(((long)blocks[2] + Key[i + 2]) % 65536);
             if (blocks[3] == 0)
-                blocks[3] = (ushort)((65536 * Key[i + 3]) % 65537);
+                blocks[3] = (ushort)(((long)65536 * Key[i + 3]) % 65537);
             else
-                blocks[3] = (ushort)((blocks[3] * Key[i + 3]) % 65537);
+                blocks[3] = (ushort)(((long)blocks[3] * Key[i + 3]) % 65537);
             ushort temp1 = (ushort)(blocks[0] ^ blocks[2]);
             ushort temp2 = (ushort)(blocks[1] ^ blocks[3]);
             if (temp1 == 0)
-                temp1 = (ushort)((65536 * Key[i + 4]) % 65537);
+                temp1 = (ushort)(((long)65536 * Key[i + 4]) % 65537);
             else
-                temp1 = (ushort)((temp1 * Key[i + 4]) % 65537);
-            temp2 = (ushort)((temp1 + temp2) % 65536);
+                temp1 = (ushort)(((long)temp1 * Key[i + 4]) % 65537);
+            temp2 = (ushort)(((long)temp1 + temp2) % 65536);
             if (temp2 == 0)
-                temp2 = (ushort)((65536 * Key[i + 5]) % 65537);
+                temp2 = (ushort)(((long)65536 * Key[i + 5]) % 65537);
             else
-                temp2 = (ushort)((temp2 * Key[i + 5]) % 65537);
+                temp2 = (ushort)(((long)temp2 * Key[i + 5]) % 65537);
             temp1 = (ushort)((temp1 + temp2) % 65536);
             blocks[0] = (ushort)(blocks[0] ^ temp2);
             blocks[1] = (ushort)(blocks[1] ^ temp1);
             blocks[2] = (ushort)(blocks[2] ^ temp2);
             blocks[3] = (ushort)(blocks[3] ^ temp1);
+            ushort t = blocks[1];
+            blocks[1] = blocks[2];
+            blocks[2] = t;
         }
 
         /// <summary>
@@ -135,16 +139,19 @@ namespace IDEAEncryprion
         /// <param name="blocks">Data blocks</param>
         private void EncryptionLastRound(ushort[] blocks)
         {
-            if(blocks[0]==0)
-                blocks[0] = (ushort)((65536 * Key[48]) % 65537);
+            ushort t = blocks[1];
+            blocks[1] = blocks[2];
+            blocks[2] = t;
+            if (blocks[0] == 0)
+                blocks[0] = (ushort)(((long)65536 * Key[48]) % 65537);
             else
-                blocks[0] = (ushort)((blocks[0] * Key[48]) % 65537);
-            blocks[1] = (ushort)((blocks[1] + Key[49]) % 65536);
-            blocks[2] = (ushort)((blocks[2] + Key[50]) % 65536);
-            if(blocks[3]==0)
-                blocks[3] = (ushort)((65536 * Key[51]) % 65537);
+                blocks[0] = (ushort)(((long)blocks[0] * Key[48]) % 65537);
+            blocks[1] = (ushort)(((long)blocks[1] + Key[49]) % 65536);
+            blocks[2] = (ushort)(((long)blocks[2] + Key[50]) % 65536);
+            if (blocks[3] == 0)
+                blocks[3] = (ushort)(((long)65536 * Key[51]) % 65537);
             else
-                blocks[3] = (ushort)((blocks[3] * Key[51]) % 65537);
+                blocks[3] = (ushort)(((long)blocks[3] * Key[51]) % 65537);
         }
 
         /// <summary>
@@ -160,7 +167,7 @@ namespace IDEAEncryprion
             keyFileStream.Write(md5, 0, md5.Length);
 
             //запись ключей в файл с ключом
-            for(int i = 0; i < 52; i++)
+            for (int i = 0; i < 52; i++)
             {
                 keyFileStream.Write(BitConverter.GetBytes(Key[i]), 0, 2);
             }
@@ -178,69 +185,41 @@ namespace IDEAEncryprion
         private void GenerateKeys()
         {
             byte[] byteKey = new byte[104];
-            //создание 128 битного ключа
-            byte[] random = new byte[16];
-            rNG.GetBytes(random);
+            byte[] bytes = new byte[16];
+            rNG.GetBytes(bytes);
 
-            byte[] temp = random;
-            for(int i = 0; i < 16; i++)
+            bytes.CopyTo(byteKey, 0);
+
+            BitArray bitArray;
+            for (int i = 1; i < 6; i++)
             {
-                byteKey[i] = temp[i];
+                bitArray = new BitArray(bytes);
+                bitArray = LeftShift(bitArray);
+                bytes = ConvertToBytes(bitArray);
+                bytes.CopyTo(byteKey, i * 16);
             }
-            for(int i = 1; i < 6; i++)
+            bitArray = new BitArray(bytes);
+            bitArray = LeftShift(bitArray);
+            bytes = ConvertToBytes(bitArray);
+            for (int i = 0; i < 8; i++)
             {
-                temp = LeftShift(KeyToString(temp));
-                for(int j = 0; j < 16; j++)
-                {
-                    byteKey[i * 16 + j] = temp[j];
-                }
-            }
-            temp = LeftShift(KeyToString(temp));
-            for(int i = 0; i < 8; i++)
-            {
-                byteKey[96 + i] = temp[i];
+                byteKey[i + 96] = bytes[i];
             }
 
             ushort[] key = new ushort[52];
-            for(int i = 0; i < 52; i++)
+            for (int i = 0; i < 52; i++)
             {
                 key[i] = BitConverter.ToUInt16(byteKey, i * 2);
             }
             Key = key;
         }
 
-        /// <summary>
-        /// Preparation key to a shift
-        /// </summary>
-        /// <param name="key">Random generated bytes</param>
-        /// <returns></returns>
-        private StringBuilder KeyToString(byte[] key)
+        private byte[] ConvertToBytes(BitArray bitArray)
         {
-            string temp = "";
-            StringBuilder res = new StringBuilder(128);
-            for (int i = 0; i < 16; i++)
-            {
-                temp = Convert.ToString(key[i], 2);
-                if (temp.Length < 8)
-                {
-                    string temp1 = "";
-                    for (int a = temp.Length - 1; a > -1; a--)
-                    {
-                        temp1 += temp[a];
-                    }
-                    for (int j = 0; j < 8 - temp.Length; j++)
-                    {
-                        temp1 += "0";
-                    }
-                    temp = null; ;
-                    for (int a = temp1.Length - 1; a > -1; a--)
-                    {
-                        temp += temp1[a];
-                    }
-                }
-                res.Append(temp);
-            }
-            return res;
+            byte[] bytes = new byte[16];
+
+            bitArray.CopyTo(bytes, 0);
+            return bytes;
         }
 
         /// <summary>
@@ -248,22 +227,32 @@ namespace IDEAEncryprion
         /// </summary>
         /// <param name="res"></param>
         /// <returns></returns>
-        private byte[] LeftShift(StringBuilder res)
+        private BitArray LeftShift(BitArray bitArray)
         {
-            string temp = null;
-            char[] charAr = new char[25];
-            res.CopyTo(0, charAr, 0, 25);
-            temp = new string(charAr);
-            res.Remove(0, 25);
-            res.Append(temp);
-            byte[] key = new byte[16];
-            char[] keyChar = new char[8];
-            for (int j = 0; j < 16; j++)
+            BitArray temp = new BitArray(128);
+            bitArray = MirrorBits(bitArray);
+            for (int i = 0; i < 25; i++)
             {
-                res.CopyTo(j * 8, keyChar, 0, 8);
-                key[j] = Convert.ToByte(new string(keyChar), 2);
+                temp[102 + i] = bitArray[i];
             }
-            return key;
-        }       
+            for (int i = 0; i < 102; i++)
+            {
+                temp[i] = bitArray[25 + i];
+            }
+            return MirrorBits(temp);
+        }
+
+        private BitArray MirrorBits(BitArray bitArray)
+        {
+            BitArray res = new BitArray(128);
+            for (int i = 0; i < 128; i += 8)
+            {
+                for (int j = 0, k = 7; j < 8; j++, k--)
+                {
+                    res[j + i] = bitArray[k + i];
+                }
+            }
+            return res;
+        }
     }
 }

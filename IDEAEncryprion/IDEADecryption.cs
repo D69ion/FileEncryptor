@@ -9,7 +9,7 @@ namespace IDEAEncryprion
     {
         public ushort[] Key { get; set; }
         const int mod = 65537; //2^16 + 1
-
+        
         /// <summary>
         /// Decrypt the file encrypted IDEA encryption
         /// </summary>
@@ -20,12 +20,16 @@ namespace IDEAEncryprion
         {
             GenerateKey(keyFileStream);
 
-            srcFileStream.Seek(17, SeekOrigin.Begin);
+            srcFileStream.Seek(18, SeekOrigin.Begin);
             resFileStream.Seek(0, SeekOrigin.Begin);
-            for (long i = 17; i < srcFileStream.Length; i += 8)
+            for (long i = 18; i < srcFileStream.Length; i += 8)
             {
-                DecryptionRounds(srcFileStream, resFileStream, i);
+                DecryptionRounds(srcFileStream, resFileStream);
             }
+            srcFileStream.Seek(17, SeekOrigin.Begin);
+            byte offset = (byte)srcFileStream.ReadByte();
+            if(!(offset==8))
+                resFileStream.SetLength(resFileStream.Length - srcFileStream.ReadByte());
             resFileStream.Flush();
         }
 
@@ -35,7 +39,7 @@ namespace IDEAEncryprion
         /// <param name="srcFileStream">Input file stream of the encrypted file</param>
         /// <param name="resFileStream">Output file stream of the decrypted file</param>
         /// <param name="startIndex">The position from which the reading starts in the source file stream</param>
-        private void DecryptionRounds(FileStream srcFileStream, FileStream resFileStream, long startIndex)
+        private void DecryptionRounds(FileStream srcFileStream, FileStream resFileStream)
         {
             byte[] data = new byte[8];
             //srcFileStream.Seek(startIndex, SeekOrigin.Begin);
@@ -73,10 +77,10 @@ namespace IDEAEncryprion
                 data[i + 1] = temp[1];
             }
 
-            //запись в файл
-            if (bytesCount < 8)
-                resFileStream.Write(data, 0, bytesCount);
-            else
+            ////запись в файл
+            //if (bytesCount < 8)
+            //    resFileStream.Write(data, 0, bytesCount);
+            //else
                 resFileStream.Write(data, 0, 8);
         }
 
@@ -88,31 +92,34 @@ namespace IDEAEncryprion
         private void DecryptionRound(ushort[] blocks, int i)
         {
             if (blocks[0] == 0)
-                blocks[0] = (ushort)((65536 * Key[i]) % 65537);
+                blocks[0] = (ushort)(((long)65536 * Key[i]) % 65537);
             else
-                blocks[0] = (ushort)((blocks[0] * Key[i]) % 65537);
-            blocks[1] = (ushort)((blocks[1] + Key[i + 1]) % 65536);
-            blocks[2] = (ushort)((blocks[2] + Key[i + 2]) % 65536);
+                blocks[0] = (ushort)(((long)blocks[0] * Key[i]) % 65537);
+            blocks[1] = (ushort)(((long)blocks[1] + Key[i + 1]) % 65536);
+            blocks[2] = (ushort)(((long)blocks[2] + Key[i + 2]) % 65536);
             if (blocks[3] == 0)
-                blocks[3] = (ushort)((65536 * Key[i + 3]) % 65537);
+                blocks[3] = (ushort)(((long)65536 * Key[i + 3]) % 65537);
             else
-                blocks[3] = (ushort)((blocks[3] * Key[i + 3]) % 65537);
+                blocks[3] = (ushort)(((long)blocks[3] * Key[i + 3]) % 65537);
             ushort temp1 = (ushort)(blocks[0] ^ blocks[2]);
             ushort temp2 = (ushort)(blocks[1] ^ blocks[3]);
             if (temp1 == 0)
-                temp1 = (ushort)((65536 * Key[i + 4]) % 65537);
+                temp1 = (ushort)(((long)65536 * Key[i + 4]) % 65537);
             else
-                temp1 = (ushort)((temp1 * Key[i + 4]) % 65537);
-            temp2 = (ushort)((temp1 + temp2) % 65536);
+                temp1 = (ushort)(((long)temp1 * Key[i + 4]) % 65537);
+            temp2 = (ushort)(((long)temp1 + temp2) % 65536);
             if (temp2 == 0)
-                temp2 = (ushort)((65536 * Key[i + 5]) % 65537);
+                temp2 = (ushort)(((long)65536 * Key[i + 5]) % 65537);
             else
-                temp2 = (ushort)((temp2 * Key[i + 5]) % 65537);
-            temp1 = (ushort)((temp1 + temp2) % 65536);
+                temp2 = (ushort)(((long)temp2 * Key[i + 5]) % 65537);
+            temp1 = (ushort)(((long)temp1 + temp2) % 65536);
             blocks[0] = (ushort)(blocks[0] ^ temp2);
             blocks[1] = (ushort)(blocks[1] ^ temp1);
             blocks[2] = (ushort)(blocks[2] ^ temp2);
             blocks[3] = (ushort)(blocks[3] ^ temp1);
+            ushort t = blocks[1];
+            blocks[1] = blocks[2];
+            blocks[2] = t;
         }
 
         /// <summary>
@@ -121,16 +128,19 @@ namespace IDEAEncryprion
         /// <param name="blocks">Data blocks</param>
         private void DecryptionLastRound(ushort[] blocks)
         {
+            ushort t = blocks[1];
+            blocks[1] = blocks[2];
+            blocks[2] = t;
             if (blocks[0] == 0)
-                blocks[0] = (ushort)((65536 * Key[48]) % 65537);
+                blocks[0] = (ushort)(((long)65536 * Key[48]) % 65537);
             else
-                blocks[0] = (ushort)((blocks[0] * Key[48]) % 65537);
-            blocks[1] = (ushort)((blocks[1] + Key[49]) % 65536);
-            blocks[2] = (ushort)((blocks[2] + Key[50]) % 65536);
+                blocks[0] = (ushort)(((long)blocks[0] * Key[48]) % 65537);
+            blocks[1] = (ushort)(((long)blocks[1] + Key[49]) % 65536);
+            blocks[2] = (ushort)(((long)blocks[2] + Key[50]) % 65536);
             if (blocks[3] == 0)
-                blocks[3] = (ushort)((65536 * Key[51]) % 65537);
+                blocks[3] = (ushort)(((long)65536 * Key[51]) % 65537);
             else
-                blocks[3] = (ushort)((blocks[3] * Key[51]) % 65537);
+                blocks[3] = (ushort)(((long)blocks[3] * Key[51]) % 65537);
 
         }
 
