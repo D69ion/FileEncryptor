@@ -9,7 +9,7 @@ namespace IDEAEncryprion
     {
         public ushort[] Key { get; set; }
         const int mod = 65537; //2^16 + 1
-        
+
         /// <summary>
         /// Decrypt the file encrypted IDEA encryption
         /// </summary>
@@ -20,15 +20,15 @@ namespace IDEAEncryprion
         {
             GenerateKey(keyFileStream);
 
-            srcFileStream.Seek(18, SeekOrigin.Begin);
+            srcFileStream.Seek(17, SeekOrigin.Begin);
             resFileStream.Seek(0, SeekOrigin.Begin);
-            for (long i = 18; i < srcFileStream.Length; i += 8)
+            for (long i = 17; i < srcFileStream.Length; i += 8)
             {
                 DecryptionRounds(srcFileStream, resFileStream);
             }
-            srcFileStream.Seek(17, SeekOrigin.Begin);
+            srcFileStream.Seek(16, SeekOrigin.Begin);
             byte offset = (byte)srcFileStream.ReadByte();
-            if(!(offset==8))
+            if (!(offset == 8))
                 resFileStream.SetLength(resFileStream.Length - srcFileStream.ReadByte());
             resFileStream.Flush();
         }
@@ -48,7 +48,7 @@ namespace IDEAEncryprion
                 return;
             if (bytesCount < 8)
             {
-                for(int i = bytesCount; i < 8; i++)
+                for (int i = bytesCount; i < 8; i++)
                 {
                     data[i] = 0;
                 }
@@ -81,7 +81,7 @@ namespace IDEAEncryprion
             //if (bytesCount < 8)
             //    resFileStream.Write(data, 0, bytesCount);
             //else
-                resFileStream.Write(data, 0, 8);
+            resFileStream.Write(data, 0, 8);
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace IDEAEncryprion
             ushort[] keyData = new ushort[52];
             byte[] temp = new byte[104];
             keyFileStream.Read(temp, 0, 104);
-            for(int i = 0; i < 52; i++)
+            for (int i = 0; i < 52; i++)
             {
                 keyData[i] = BitConverter.ToUInt16(temp, i * 2);
             }
@@ -264,7 +264,7 @@ namespace IDEAEncryprion
                 if (pow % 2 == 1)
                     res = (res * value) % mod;
                 pow >>= 1;
-                temp = (long)Math.Pow(value,2);
+                temp = (long)Math.Pow(value, 2);
                 value = (ushort)(temp % mod);
             }
             return (ushort)res;

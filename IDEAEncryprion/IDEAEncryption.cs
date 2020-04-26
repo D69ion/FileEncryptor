@@ -27,16 +27,12 @@ namespace IDEAEncryprion
 
             CreateKeyFile(keyFileStream, md5, extension);
 
-            //запись флага шифрования в зашифрованный файл
-            resFileStream.Seek(0, SeekOrigin.Begin);
-            resFileStream.WriteByte(1);
-
             //запись MD5 хеша в зашифрованный файл
             resFileStream.Write(md5, 0, md5.Length);
 
             //шифрование файла
             srcFileStream.Seek(0, SeekOrigin.Begin);
-            resFileStream.WriteByte((byte)(8 -(srcFileStream.Length % 8)));
+            resFileStream.WriteByte((byte)(8 - (srcFileStream.Length % 8)));
             for (long i = 0; i < srcFileStream.Length; i += 8)
             {
                 EncryptionRounds(srcFileStream, resFileStream);
@@ -92,7 +88,7 @@ namespace IDEAEncryprion
             //if (bytesCount < 8)
             //    resFileStream.Write(data, 0, bytesCount);
             //else
-                resFileStream.Write(data, 0, 8);
+            resFileStream.Write(data, 0, 8);
         }
 
         /// <summary>

@@ -41,13 +41,15 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveDirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.buttonSavePath = new System.Windows.Forms.Button();
+            this.buttonSend = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 54);
+            this.label1.Location = new System.Drawing.Point(10, 55);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(52, 13);
             this.label1.TabIndex = 0;
@@ -56,7 +58,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 114);
+            this.label2.Location = new System.Drawing.Point(10, 115);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(47, 13);
             this.label2.TabIndex = 1;
@@ -64,7 +66,7 @@
             // 
             // textBoxFileName
             // 
-            this.textBoxFileName.Location = new System.Drawing.Point(12, 70);
+            this.textBoxFileName.Location = new System.Drawing.Point(12, 71);
             this.textBoxFileName.Multiline = true;
             this.textBoxFileName.Name = "textBoxFileName";
             this.textBoxFileName.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
@@ -73,7 +75,7 @@
             // 
             // textBoxFilePath
             // 
-            this.textBoxFilePath.Location = new System.Drawing.Point(12, 130);
+            this.textBoxFilePath.Location = new System.Drawing.Point(12, 131);
             this.textBoxFilePath.Multiline = true;
             this.textBoxFilePath.Name = "textBoxFilePath";
             this.textBoxFilePath.ScrollBars = System.Windows.Forms.ScrollBars.Both;
@@ -100,7 +102,7 @@
             // 
             // buttonSelectFile
             // 
-            this.buttonSelectFile.Location = new System.Drawing.Point(232, 70);
+            this.buttonSelectFile.Location = new System.Drawing.Point(93, 27);
             this.buttonSelectFile.Name = "buttonSelectFile";
             this.buttonSelectFile.Size = new System.Drawing.Size(75, 23);
             this.buttonSelectFile.TabIndex = 7;
@@ -110,7 +112,7 @@
             // 
             // buttonEncrypt
             // 
-            this.buttonEncrypt.Location = new System.Drawing.Point(323, 70);
+            this.buttonEncrypt.Location = new System.Drawing.Point(244, 71);
             this.buttonEncrypt.Name = "buttonEncrypt";
             this.buttonEncrypt.Size = new System.Drawing.Size(75, 23);
             this.buttonEncrypt.TabIndex = 8;
@@ -120,7 +122,7 @@
             // 
             // buttonDecrypt
             // 
-            this.buttonDecrypt.Location = new System.Drawing.Point(323, 107);
+            this.buttonDecrypt.Location = new System.Drawing.Point(244, 101);
             this.buttonDecrypt.Name = "buttonDecrypt";
             this.buttonDecrypt.Size = new System.Drawing.Size(75, 23);
             this.buttonDecrypt.TabIndex = 9;
@@ -150,21 +152,42 @@
             // selectFileToolStripMenuItem
             // 
             this.selectFileToolStripMenuItem.Name = "selectFileToolStripMenuItem";
-            this.selectFileToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.selectFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.selectFileToolStripMenuItem.Text = "Select File";
             this.selectFileToolStripMenuItem.Click += new System.EventHandler(this.Button_SelectFile_Click);
             // 
             // saveDirectoryToolStripMenuItem
             // 
             this.saveDirectoryToolStripMenuItem.Name = "saveDirectoryToolStripMenuItem";
-            this.saveDirectoryToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.saveDirectoryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveDirectoryToolStripMenuItem.Text = "Save Directory";
             this.saveDirectoryToolStripMenuItem.Click += new System.EventHandler(this.SaveDirectoryToolStripMenuItem_Click);
+            // 
+            // buttonSavePath
+            // 
+            this.buttonSavePath.Location = new System.Drawing.Point(12, 27);
+            this.buttonSavePath.Name = "buttonSavePath";
+            this.buttonSavePath.Size = new System.Drawing.Size(75, 23);
+            this.buttonSavePath.TabIndex = 11;
+            this.buttonSavePath.Text = "Save Path";
+            this.buttonSavePath.UseVisualStyleBackColor = true;
+            this.buttonSavePath.Click += new System.EventHandler(this.SaveDirectoryToolStripMenuItem_Click);
+            // 
+            // buttonSend
+            // 
+            this.buttonSend.Location = new System.Drawing.Point(175, 28);
+            this.buttonSend.Name = "buttonSend";
+            this.buttonSend.Size = new System.Drawing.Size(75, 23);
+            this.buttonSend.TabIndex = 12;
+            this.buttonSend.Text = "Send File";
+            this.buttonSend.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(413, 495);
+            this.Controls.Add(this.buttonSend);
+            this.Controls.Add(this.buttonSavePath);
             this.Controls.Add(this.buttonDecrypt);
             this.Controls.Add(this.buttonEncrypt);
             this.Controls.Add(this.buttonSelectFile);
@@ -201,6 +224,8 @@
         private System.Windows.Forms.ToolStripMenuItem selectFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveDirectoryToolStripMenuItem;
         public System.Windows.Forms.TextBox textBoxLog;
+        private System.Windows.Forms.Button buttonSavePath;
+        private System.Windows.Forms.Button buttonSend;
     }
 }
 
