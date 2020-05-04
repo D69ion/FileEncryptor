@@ -9,48 +9,52 @@ namespace IDEAEncryprion
 {
     public class IDEAEncryption
     {
-        private static RNGCryptoServiceProvider rNG = new RNGCryptoServiceProvider();
+        private static readonly RNGCryptoServiceProvider rNG = new RNGCryptoServiceProvider();
+        private FileStream SrcFileStream { get; set; }
+        private FileStream ResFileStream { get; set; }
+        private FileStream KeyFileStream { get; set; }
+        private string Extension { get; set; }
 
         public ushort[] Key { get; set; }
 
+        public IDEAEncryption(FileStream src, FileStream res, FileStream key, string ext)
+        {
+            SrcFileStream = src;
+            ResFileStream = res;
+            KeyFileStream = key;
+            Extension = ext;
+        }
         /// <summary>
         /// Encrypt file with IDEA encryption
         /// </summary>
-        /// <param name="srcFileStream">Input file stream of the source file</param>
-        /// <param name="resFileStream">Output file stream of the encrypted file</param>
-        /// <param name="keyFileStream">Output file stream of the key file</param>
-        /// <param name="extension">Source file extension</param>
-        public void Encrypt(FileStream srcFileStream, FileStream resFileStream, FileStream keyFileStream, string extension)
+        public void Encrypt()
         {
             GenerateKeys();
-            var md5 = MD5.Create().ComputeHash(srcFileStream);
+            var md5 = MD5.Create().ComputeHash(SrcFileStream);
 
-            CreateKeyFile(keyFileStream, md5, extension);
+            CreateKeyFile(md5);
 
             //запись MD5 хеша в зашифрованный файл
-            resFileStream.Write(md5, 0, md5.Length);
+            ResFileStream.Write(md5, 0, md5.Length);
 
             //шифрование файла
-            srcFileStream.Seek(0, SeekOrigin.Begin);
-            resFileStream.WriteByte((byte)(8 - (srcFileStream.Length % 8)));
-            for (long i = 0; i < srcFileStream.Length; i += 8)
+            SrcFileStream.Seek(0, SeekOrigin.Begin);
+            ResFileStream.WriteByte((byte)(8 - (SrcFileStream.Length % 8)));
+            for (long i = 0; i < SrcFileStream.Length; i += 8)
             {
-                EncryptionRounds(srcFileStream, resFileStream);
+                EncryptionRounds();
             }
-            resFileStream.Flush();
+            ResFileStream.Flush();
         }
 
         /// <summary>
         /// First 8 rounds of encryption
         /// </summary>
-        /// <param name="srcFileStream">Input file stream of the source file</param>
-        /// <param name="resFileStream">Output file stream of the encrypted file</param>
-        /// <param name="startIndex">The position from which the reading starts in the source file stream</param>
-        private void EncryptionRounds(FileStream srcFileStream, FileStream resFileStream)
+        private void EncryptionRounds()
         {
             byte[] data = new byte[8];
             //srcFileStream.Seek(startIndex, SeekOrigin.Begin);
-            sbyte bytesCount = (sbyte)srcFileStream.Read(data, 0, 8);
+            sbyte bytesCount = (sbyte)SrcFileStream.Read(data, 0, 8);
             if (bytesCount == -1)
                 return;
             if (bytesCount < 8)
@@ -88,7 +92,7 @@ namespace IDEAEncryprion
             //if (bytesCount < 8)
             //    resFileStream.Write(data, 0, bytesCount);
             //else
-            resFileStream.Write(data, 0, 8);
+            ResFileStream.Write(data, 0, 8);
         }
 
         /// <summary>
@@ -156,23 +160,23 @@ namespace IDEAEncryprion
         /// <param name="keyFileStream">Output file stream of the key file</param>
         /// <param name="extension">Source file extension</param>
         /// <param name="md5">MD5 hash</param>
-        private void CreateKeyFile(FileStream keyFileStream, byte[] md5, string extension)
+        private void CreateKeyFile(byte[] md5)
         {
             //запись MD5 хеша в файл с ключом
-            keyFileStream.Seek(0, SeekOrigin.Begin);
-            keyFileStream.Write(md5, 0, md5.Length);
+            KeyFileStream.Seek(0, SeekOrigin.Begin);
+            KeyFileStream.Write(md5, 0, md5.Length);
 
             //запись ключей в файл с ключом
             for (int i = 0; i < 52; i++)
             {
-                keyFileStream.Write(BitConverter.GetBytes(Key[i]), 0, 2);
+                KeyFileStream.Write(BitConverter.GetBytes(Key[i]), 0, 2);
             }
 
             //запись расширения файла в зашифрованный файл
-            byte[] temp = Encoding.Default.GetBytes(extension);
-            keyFileStream.Write(temp, 0, temp.Length);
+            byte[] temp = Encoding.Default.GetBytes(Extension);
+            KeyFileStream.Write(temp, 0, temp.Length);
 
-            keyFileStream.Flush();
+            KeyFileStream.Flush();
         }
 
         /// <summary>

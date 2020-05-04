@@ -19,13 +19,11 @@ namespace FileEncryptor
             if (textBoxKeyFile.Text.Length > 0)
             {
                 mainForm.KeyFilePath = textBoxKeyFile.Text;
-                this.DialogResult = DialogResult.OK;
             }
             else
             {
                 MessageBox.Show("No encryption key file selected.");
                 return;
-
             }
             this.DialogResult = DialogResult.OK;
         }
@@ -45,8 +43,8 @@ namespace FileEncryptor
                 FileInfo info = new FileInfo(fileDialog.FileName);
                 textBoxKeyFile.Text = info.FullName;
                 mainForm.textBoxLog.Text += "Selected key file: " + info.Name.ToString() + "\r\n";
-                //mainForm.KeyFilePath = info.FullName;
             }
+            fileDialog.Dispose();
         }
     }
 }

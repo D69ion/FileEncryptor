@@ -43,6 +43,8 @@
             this.saveDirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.buttonSavePath = new System.Windows.Forms.Button();
             this.buttonSend = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.textBoxID = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -152,14 +154,14 @@
             // selectFileToolStripMenuItem
             // 
             this.selectFileToolStripMenuItem.Name = "selectFileToolStripMenuItem";
-            this.selectFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.selectFileToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.selectFileToolStripMenuItem.Text = "Select File";
             this.selectFileToolStripMenuItem.Click += new System.EventHandler(this.Button_SelectFile_Click);
             // 
             // saveDirectoryToolStripMenuItem
             // 
             this.saveDirectoryToolStripMenuItem.Name = "saveDirectoryToolStripMenuItem";
-            this.saveDirectoryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveDirectoryToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.saveDirectoryToolStripMenuItem.Text = "Save Directory";
             this.saveDirectoryToolStripMenuItem.Click += new System.EventHandler(this.SaveDirectoryToolStripMenuItem_Click);
             // 
@@ -181,11 +183,30 @@
             this.buttonSend.TabIndex = 12;
             this.buttonSend.Text = "Send File";
             this.buttonSend.UseVisualStyleBackColor = true;
+            this.buttonSend.Click += new System.EventHandler(this.buttonSend_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(256, 33);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.TabIndex = 13;
+            this.label4.Text = "My ID";
+            // 
+            // textBoxID
+            // 
+            this.textBoxID.Location = new System.Drawing.Point(297, 29);
+            this.textBoxID.Name = "textBoxID";
+            this.textBoxID.Size = new System.Drawing.Size(104, 20);
+            this.textBoxID.TabIndex = 14;
             // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(413, 495);
+            this.Controls.Add(this.textBoxID);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.buttonSend);
             this.Controls.Add(this.buttonSavePath);
             this.Controls.Add(this.buttonDecrypt);
@@ -226,6 +247,8 @@
         public System.Windows.Forms.TextBox textBoxLog;
         private System.Windows.Forms.Button buttonSavePath;
         private System.Windows.Forms.Button buttonSend;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox textBoxID;
     }
 }
 

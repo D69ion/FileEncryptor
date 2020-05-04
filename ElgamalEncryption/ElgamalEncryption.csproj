@@ -7,8 +7,8 @@
     <ProjectGuid>{B2F06400-0E1F-426E-B98B-9D17F3CC99AB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Encryption</RootNamespace>
-    <AssemblyName>Encryption</AssemblyName>
+    <RootNamespace>ElgamalEncryption</RootNamespace>
+    <AssemblyName>ElgamalEncryption</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

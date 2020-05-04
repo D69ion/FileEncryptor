@@ -4,6 +4,9 @@ using System.Text;
 using System.Windows.Forms;
 using IDEAEncryprion;
 using ElgamalEncryption;
+using System.Threading;
+using System.Net.Sockets;
+using System.Net;
 
 namespace FileEncryptor
 {
@@ -14,12 +17,17 @@ namespace FileEncryptor
             InitializeComponent();
             buttonDecrypt.Enabled = false;
             buttonEncrypt.Enabled = false;
+            buttonSend.Enabled = false;
             textBoxFileName.ReadOnly = true;
             textBoxFilePath.ReadOnly = true;
             textBoxLog.ReadOnly = true;
             SavePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\FileEncryptor";
             KeyFilePath = "";
             FileInfo = null;
+            Thread thread = new Thread(new ThreadStart(StartListen));
+            thread.IsBackground = true;
+            thread.Start();
+            textBoxID.Text = GetIP();
         }
 
         public FileInfo FileInfo { get; set; }
@@ -47,6 +55,7 @@ namespace FileEncryptor
                     buttonDecrypt.Enabled = false;
                 }
                 textBoxLog.Text += DateTime.Now.ToString() + " Selected file: " + FileInfo.Name + "\r\n";
+                buttonSend.Enabled = true;
             }
             fileDialog.Dispose();
         }
@@ -69,10 +78,9 @@ namespace FileEncryptor
                               keyFileStream = File.Create(SavePath + "\\" + Path.GetFileNameWithoutExtension(FileInfo.FullName) + ".key"))
             {
                 //вызовы функций шифрования
-                IDEAEncryption encryption = new IDEAEncryption();
-                encryption.Encrypt(srcFileStream, resFileStream, keyFileStream, FileInfo.Extension);
+                IDEAEncryption encryption = new IDEAEncryption(srcFileStream, resFileStream, keyFileStream, FileInfo.Extension);
+                encryption.Encrypt();
             }
-            //}
 
             //очищение textbox и полей данных
             ClearData();
@@ -107,8 +115,8 @@ namespace FileEncryptor
                     }
 
                     //вызовы функций дешифровки
-                    IDEADecryption decryption = new IDEADecryption();
-                    decryption.Decrypt(srcFileStream, resFileStream, keyFileStream);
+                    IDEADecryption decryption = new IDEADecryption(srcFileStream, resFileStream, keyFileStream);
+                    decryption.Decrypt();
                 }
                 //очищение textbox и полей данных
                 ClearData();
@@ -137,10 +145,17 @@ namespace FileEncryptor
             //browserDialog.RootFolder = Environment.SpecialFolder.MyDocuments;
             if (browserDialog.ShowDialog() == DialogResult.OK)
             {
-                SavePath = browserDialog.SelectedPath.ToString();
-                textBoxLog.Text += DateTime.Now.ToString() + " Save folder is selected: " + browserDialog.SelectedPath.ToString() + "\r\n";
+                SavePath = browserDialog.SelectedPath;
+                textBoxLog.Text += DateTime.Now.ToString() + " Save folder is selected: " + browserDialog.SelectedPath + "\r\n";
             }
             browserDialog.Dispose();
+        }
+
+        private void buttonSend_Click(object sender, EventArgs e)
+        {
+            SendFileForm form = new SendFileForm(FileInfo);
+            form.ShowDialog();
+            form.Dispose();
         }
 
         /// <summary>
@@ -174,8 +189,45 @@ namespace FileEncryptor
         {
             textBoxFileName.Clear();
             textBoxFilePath.Clear();
-            KeyFilePath = "";
+            KeyFilePath = String.Empty;
             FileInfo = null;
+        }
+
+
+        private string GetIP()
+        {
+            string externalip = new WebClient().DownloadString("http://icanhazip.com");
+
+            externalip = externalip.Remove(externalip.IndexOf('\n'), 1);
+            string[] st = externalip.Split('.');
+
+            byte[] vs = new byte[st.Length];
+            for (int i = 0; i < vs.Length; i++)
+            {
+                vs[i] = Convert.ToByte(st[i]);
+                Console.WriteLine(vs[i]);
+            }
+
+            uint temp = BitConverter.ToUInt32(vs, 0);
+            return temp.ToString();
+        }
+
+        private void StartListen()
+        {
+            int port = 4000;
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
+            TcpListener tcpListener = new TcpListener(endPoint);
+            tcpListener.Start();
+            TcpClient client;
+            while (true)
+            {
+                client = tcpListener.AcceptTcpClient();
+                ReceiveFileForm receiveForm = new ReceiveFileForm(client, SavePath);
+                receiveForm.ShowDialog();
+                //receiveForm.Receive();
+                receiveForm.Dispose();
+            }
+            tcpListener.Stop();
         }
     }
 }
