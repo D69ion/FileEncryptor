@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using IDEAEncryprion;
-using ElgamalEncryption;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;

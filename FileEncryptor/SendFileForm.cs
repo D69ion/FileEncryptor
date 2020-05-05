@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,14 +54,33 @@ namespace FileEncryptor
                 IPAddress iPAddress = new IPAddress(Convert.ToInt64(textBoxID.Text));
                 IPEndPoint endPoint = new IPEndPoint(iPAddress, port);
                 TcpClient tcpClient = new TcpClient(endPoint);
-                using (Stream srcFile = SrcFileInfo.OpenRead(),
-                             networkStream = tcpClient.GetStream())
+
+                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+                using (AesCryptoServiceProvider aes = new AesCryptoServiceProvider())
+                using (NetworkStream networkStream = tcpClient.GetStream())
+                using (CryptoStream cryptoNetStream = new CryptoStream(networkStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
                 {
+                    //отправка открытого ключа
+                    RSAParameters rSAParameters = rsa.ExportParameters(false);
+                    networkStream.Write(rSAParameters.Modulus, 0, 128);
+                    networkStream.Write(rSAParameters.Exponent, 0, 3);
+                    //получение и дешифровка сеансового ключа
+                    byte[] encrData = new byte[128],
+                           sessionKey;
+                    networkStream.Read(encrData, 0, encrData.Length);
+                    sessionKey = rsa.Decrypt(encrData, false);
+                    //инициализация сеансовго ключа
+                    for (int i = 0; i < 32; i++)
+                        aes.Key[i] = sessionKey[i];
+                    for (int i = 32; i < 48; i++)
+                        aes.IV[i - 32] = sessionKey[i];
+
                     progressBar1.Visible = true;
                     progressBar1.Maximum = (int)(SrcFileInfo.Length / 2);
 
-                    byte[] buffer = new byte[4];
+                    byte[] buffer = new byte[16];
                     byte[] name;
+                    int bytesCount = 0;
 
                     if (KeyFileInfo != null)
                     {
@@ -82,8 +102,8 @@ namespace FileEncryptor
                             for (long i = 0; i < KeyFileInfo.Length; i += buffer.Length)
                             {
                                 //добавить шифрование
-                                keyFile.Read(buffer, 0, buffer.Length);
-                                networkStream.Write(buffer, 0, buffer.Length);
+                                bytesCount = keyFile.Read(buffer, 0, buffer.Length);
+                                cryptoNetStream.Write(buffer, 0, bytesCount);
                                 progressBar1.Value += buffer.Length / 2;
                             }
                         }
@@ -96,16 +116,20 @@ namespace FileEncryptor
                         networkStream.Write(name, 0, name.Length);
                         networkStream.Write(BitConverter.GetBytes(SrcFileInfo.Length), 0, 8);
                     }
-
-                    for (long i = 0; i < SrcFileInfo.Length; i += buffer.Length)
+                    using (FileStream srcFile = SrcFileInfo.OpenRead())
                     {
-                        //добавить шифрование
-                        srcFile.Read(buffer, 0, buffer.Length);
-                        networkStream.Write(buffer, 0, buffer.Length);
-                        progressBar1.Value += buffer.Length / 2;
+                        for (long i = 0; i < SrcFileInfo.Length; i += buffer.Length)
+                        {
+                            //добавить шифрование
+                            bytesCount = srcFile.Read(buffer, 0, buffer.Length);
+                            cryptoNetStream.Write(buffer, 0, bytesCount);
+                            progressBar1.Value += buffer.Length / 2;
+                        }
                     }
                 }
                 tcpClient.Close();
+                KeyFileInfo.Delete();
+                SrcFileInfo.Delete();
                 MessageBox.Show("File succsessfully sended", "Succsess", MessageBoxButtons.OK, MessageBoxIcon.None);
             }
             catch (Exception exp)
