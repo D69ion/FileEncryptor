@@ -8,9 +8,10 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>FileEncryptor</RootNamespace>
     <AssemblyName>FileEncryptor</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -47,6 +48,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileService.cs" />
     <Compile Include="InfoForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -118,6 +120,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ElgamalEncryption\ElgamalEncryption.csproj">
+      <Project>{b2f06400-0e1f-426e-b98b-9d17f3cc99ab}</Project>
+      <Name>ElgamalEncryption</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IDEAEncryprion\IDEAEncryption.csproj">
       <Project>{fa26b884-ac23-4989-898f-92c340f48ab0}</Project>
       <Name>IDEAEncryption</Name>

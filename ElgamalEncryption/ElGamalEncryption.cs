@@ -18,32 +18,47 @@ namespace ElgamalEncryption
         private int Y { get; set; } //число Y = G^X mod P (закрытый ключ)
         private int K { get; set; } //случайное число 1 < K < P - 1
 
+        private FileStream SrcFileStream { get; set; }
+        private FileStream ResFileStream { get; set; }
+        private FileStream KeyFileStream { get; set; }
+        private string Extension { get; set; }
+
+
+        public ElGamalEncryption(FileStream srcFileStream, FileStream resFileStream, FileStream keyFileStream, string extension)
+        {
+            SrcFileStream = srcFileStream;
+            ResFileStream = resFileStream;
+            KeyFileStream = keyFileStream;
+            Extension = extension;
+
+        }
+
         /// <summary>
         /// Encrypt file with El Gamal scheme
         /// </summary>
-        /// <param name="srcFileStream">Input file stream of the source file</param>
-        /// <param name="resFileStream">Output file stream of the encrypted file</param>
-        /// <param name="keyFileStream">Output file stream of the key file</param>
+        /// <param name="SrcFileStream">Input file stream of the source file</param>
+        /// <param name="ResFileStream">Output file stream of the encrypted file</param>
+        /// <param name="KeyFileStream">Output file stream of the key file</param>
         /// <param name="extension">Source file extension</param>
-        public void Encrypt(FileStream srcFileStream, FileStream keyFileStream, FileStream resFileStream, string extension)
+        public void Encrypt()
         {
             GenerateKeys();
 
             //создние MD5 хеша
-            byte[] md5 = MD5.Create().ComputeHash(srcFileStream);
-            CreateKeyFile(keyFileStream, md5, extension);
+            byte[] md5 = MD5.Create().ComputeHash(SrcFileStream);
+            CreateKeyFile(KeyFileStream, md5, Extension);
 
-            resFileStream.Seek(0, SeekOrigin.Begin);
-            resFileStream.WriteByte(2);
-            resFileStream.Write(md5, 0, md5.Length);
+            ResFileStream.Seek(0, SeekOrigin.Begin);
+            ResFileStream.WriteByte(2);
+            ResFileStream.Write(md5, 0, md5.Length);
 
             byte[] temp = new byte[2];
             byte[] dataTemp = new byte[4];
             ushort data = 0;
-            srcFileStream.Seek(0, SeekOrigin.Begin);
-            for (long i = 0; i < srcFileStream.Length; i += 2)
+            SrcFileStream.Seek(0, SeekOrigin.Begin);
+            for (long i = 0; i < SrcFileStream.Length; i += 2)
             {
-                srcFileStream.Read(temp, 0, 2);
+                SrcFileStream.Read(temp, 0, 2);
 
                 //шифрование блока данных
                 data = BitConverter.ToUInt16(temp, 0);
@@ -53,9 +68,9 @@ namespace ElgamalEncryption
 
                 //запись зашифрованного блока данных
                 dataTemp = BitConverter.GetBytes((int)a);
-                resFileStream.Write(dataTemp, 0, 4);
+                ResFileStream.Write(dataTemp, 0, 4);
                 dataTemp = BitConverter.GetBytes((int)b);
-                resFileStream.Write(dataTemp, 0, 4);
+                ResFileStream.Write(dataTemp, 0, 4);
             }
         }
 

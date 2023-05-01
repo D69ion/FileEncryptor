@@ -45,6 +45,7 @@
             this.buttonSend = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.textBoxID = new System.Windows.Forms.TextBox();
+            this.comboBoxSelectEncryption = new System.Windows.Forms.ComboBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -201,10 +202,22 @@
             this.textBoxID.Size = new System.Drawing.Size(104, 20);
             this.textBoxID.TabIndex = 14;
             // 
+            // comboBoxSelectEncryption
+            // 
+            this.comboBoxSelectEncryption.FormattingEnabled = true;
+            this.comboBoxSelectEncryption.Items.AddRange(new object[] {
+            "IDEA",
+            "Elgamal"});
+            this.comboBoxSelectEncryption.Location = new System.Drawing.Point(233, 131);
+            this.comboBoxSelectEncryption.Name = "comboBoxSelectEncryption";
+            this.comboBoxSelectEncryption.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxSelectEncryption.TabIndex = 15;
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(413, 495);
+            this.Controls.Add(this.comboBoxSelectEncryption);
             this.Controls.Add(this.textBoxID);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.buttonSend);
@@ -249,6 +262,7 @@
         private System.Windows.Forms.Button buttonSend;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox textBoxID;
+        private System.Windows.Forms.ComboBox comboBoxSelectEncryption;
     }
 }
 

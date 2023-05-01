@@ -20,6 +20,7 @@ namespace FileEncryptor
             textBoxFileName.ReadOnly = true;
             textBoxFilePath.ReadOnly = true;
             textBoxLog.ReadOnly = true;
+            comboBoxSelectEncryption.Enabled = false;
             SavePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\FileEncryptor";
             KeyFilePath = "";
             FileInfo = null;
@@ -47,11 +48,13 @@ namespace FileEncryptor
                 {
                     buttonDecrypt.Enabled = true;
                     buttonEncrypt.Enabled = false;
+                    comboBoxSelectEncryption.Enabled = false;
                 }
                 else
                 {
                     buttonEncrypt.Enabled = true;
                     buttonDecrypt.Enabled = false;
+                    comboBoxSelectEncryption.Enabled = true;
                 }
                 textBoxLog.Text += DateTime.Now.ToString() + " Selected file: " + FileInfo.Name + "\r\n";
                 buttonSend.Enabled = true;
@@ -61,24 +64,15 @@ namespace FileEncryptor
 
         private void ButtonEncrypt_Click(object sender, EventArgs e)
         {
-            /*if (fileInfo.Length > 1024 * 1024 * 4 && EncryptionFlag == 1)
+            try
             {
-                string text = "The file size for the selected method should not exceed 4 GB";
-                string caption1 = "Error";
-                MessageBox.Show(text, caption1, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                //очищение textbox и полей данных
-                ClearData();
-                buttonEncrypt.Enabled = false;
+                FileService fileService = new FileService(FileInfo, SavePath);
+                fileService.UseEncryption(comboBoxSelectEncryption.Text);
+            }
+            catch (NotImplementedException)
+            {
+                MessageBox.Show("Not implemented", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
-            }*/
-            //создание файловых потоков
-            using (FileStream srcFileStream = File.Open(FileInfo.FullName, FileMode.Open, FileAccess.Read),
-                              resFileStream = File.Create(SavePath + "\\" + Path.GetFileNameWithoutExtension(FileInfo.FullName) + ".encryp"),
-                              keyFileStream = File.Create(SavePath + "\\" + Path.GetFileNameWithoutExtension(FileInfo.FullName) + ".key"))
-            {
-                //вызовы функций шифрования
-                IDEAEncryption encryption = new IDEAEncryption(srcFileStream, resFileStream, keyFileStream, FileInfo.Extension);
-                encryption.Encrypt();
             }
 
             //очищение textbox и полей данных
@@ -99,23 +93,16 @@ namespace FileEncryptor
             if (decryptionForm.DialogResult == DialogResult.OK)
             {
                 decryptionForm.Dispose();
-                using (FileStream keyFileStream = new FileStream(KeyFilePath, FileMode.Open, FileAccess.Read),
-                                  srcFileStream = new FileStream(FileInfo.FullName, FileMode.Open, FileAccess.Read),
-                                  resFileStream = File.Create(SavePath + "\\" + Path.GetFileNameWithoutExtension(FileInfo.FullName) + GetExtension(keyFileStream)))
-                {
-                    //сравнение хешей
-                    if (!CompareHash(keyFileStream, srcFileStream))
-                    {
-                        string text = "The key file does not math the encrypted file";
-                        string caption1 = "Error";
-                        MessageBox.Show(text, caption1, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        KeyFilePath = "";
-                        return;
-                    }
 
-                    //вызовы функций дешифровки
-                    IDEADecryption decryption = new IDEADecryption(srcFileStream, resFileStream, keyFileStream);
-                    decryption.Decrypt();
+                try
+                {
+                    FileService fileService = new FileService(FileInfo, SavePath, KeyFilePath);
+                    fileService.UseDecryption();
+                }
+                catch (NotImplementedException)
+                {
+                    MessageBox.Show("Not implemented", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
                 //очищение textbox и полей данных
                 ClearData();
@@ -128,14 +115,6 @@ namespace FileEncryptor
                 MessageBox.Show(info, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             decryptionForm.Dispose();
-        }
-
-        private string GetExtension(FileStream keyFileStream)
-        {
-            byte[] data = new byte[keyFileStream.Length - 120];
-            keyFileStream.Seek(120, SeekOrigin.Begin);
-            keyFileStream.Read(data, 0, (int)(keyFileStream.Length - 120));
-            return Encoding.ASCII.GetString(data);
         }
 
         private void SaveDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
@@ -155,30 +134,6 @@ namespace FileEncryptor
             SendFileForm form = new SendFileForm(FileInfo);
             form.ShowDialog();
             form.Dispose();
-        }
-
-        /// <summary>
-        /// Compare hash from key file with hash from encrypted file
-        /// </summary>
-        /// <param name="keyFileStream">Key file stream</param>
-        /// <param name="encryptedFileStream">File stream of the encrypted file</param>
-        /// <returns></returns>
-        private bool CompareHash(FileStream keyFileStream, FileStream encryptedFileStream)
-        {
-            byte[] hashKeyFile = new byte[16];
-            byte[] hashEncryptedFile = new byte[16];
-            keyFileStream.Seek(0, SeekOrigin.Begin);
-            encryptedFileStream.Seek(0, SeekOrigin.Begin);
-            keyFileStream.Read(hashKeyFile, 0, 16);
-            encryptedFileStream.Read(hashEncryptedFile, 0, 16);
-            for (int i = 0; i < 16; i++)
-            {
-                if (hashEncryptedFile[i] != hashKeyFile[i])
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         /// <summary>
